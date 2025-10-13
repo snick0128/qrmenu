@@ -1,0 +1,49 @@
+{
+  "restaurant": {
+    "id": "rest_seed_001",
+    "name": "Seeded Spice Garden",
+    "address": "42 Mockingbird Lane",
+    "phone": "+91 90000 00000",
+    "tableNumber": "1",
+    "logoUrl": "https://via.placeholder.com/200x200/CCCCCC/000000?text=Logo",
+    "settings": { "currency": "INR", "tax_rate": 0.18 }
+  },
+  "menuItems": [
+    {
+      "id": "seed_001",
+      "name": "Seeded Butter Roti",
+      "description": "Local placeholder roti",
+      "price": 20.0,
+      "category": "Breads",
+      "imageUrl": "https://via.placeholder.com/300x200/BBBBBB/000000?text=Butter+Roti",
+      "isVeg": true,
+      "isSpicy": false,
+      "isAvailable": true,
+      "rating": 4.4,
+      "reviewCount": 10,
+      "allergens": [],
+      "nutritionalInfo": {},
+      "isPopular": true,
+      "isQuickOrder": true,
+      "preparationTime": "5-8 min"
+    },
+    {
+      "id": "seed_002",
+      "name": "Seeded Masala Chai",
+      "description": "Placeholder masala chai",
+      "price": 15.0,
+      "category": "Beverages",
+      "imageUrl": "https://via.placeholder.com/300x200/AAAAAA/000000?text=Masala+Chai",
+      "isVeg": true,
+      "isSpicy": false,
+      "isAvailable": true,
+      "rating": 4.7,
+      "reviewCount": 30,
+      "allergens": [],
+      "nutritionalInfo": {},
+      "isPopular": false,
+      "isQuickOrder": true,
+      "preparationTime": "3-5 min"
+    }
+  ]
+}

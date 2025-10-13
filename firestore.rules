@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow read/write access to all documents for development
+    // TODO: Replace with proper authentication-based rules for production
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Admin-specific collections
+    match /tables/{tableId} {
+      allow read, write: if true; // Admin access
+    }
+    
+    match /analytics/{analyticsId} {
+      allow read, write: if true; // Admin access
+    }
+    
+    // Existing collections
+    match /orders/{orderId} {
+      allow read, write: if true;
+    }
+    
+    match /dineInSessions/{sessionId} {
+      allow read, write: if true;
+    }
+    
+    match /menuItems/{itemId} {
+      allow read, write: if true;
+    }
+    
+    match /categories/{categoryId} {
+      allow read, write: if true;
+    }
+    
+    match /accessCodes/{codeId} {
+      allow read, write: if true;
+    }
+    
+    match /tableReservations/{tableId} {
+      allow read, write: if true;
+    }
+  }
+}
