@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart'; // 👈 Added
 import '../services/firebase_service.dart';
-import '../services/seed_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/scanner_overlay.dart';
 import '../firebase_options.dart';
@@ -79,22 +78,22 @@ class _QREntryScreenState extends State<QREntryScreen>
   }
 
   Future<void> _handleSeedData(BuildContext context) async {
-    try {
-      setState(() => _isLoading = true);
-      await SeedService.seedAllDemoData();
-      await FirebaseService.listAllAccessCodes();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Test data seeded successfully!')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to seed test data: $e')));
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    // try {
+    //   setState(() => _isLoading = true);
+    //   await SeedService.seedAllDemoData();
+    //   await FirebaseService.listAllAccessCodes();
+    //   if (!mounted) return;
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Test data seeded successfully!')),
+    //   );
+    // } catch (e) {
+    //   if (!mounted) return;
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('Failed to seed test data: $e')),
+    //   );
+    // } finally {
+    //   if (mounted) setState(() => _isLoading = false);
+    // }
   }
 
   Future<void> _validateCode(String code) async {
