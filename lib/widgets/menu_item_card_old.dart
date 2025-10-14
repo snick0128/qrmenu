@@ -41,20 +41,12 @@ class _MenuItemCardState extends State<MenuItemCard>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    _fadeAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.8,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.8).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -120,13 +112,16 @@ class _MenuItemCardState extends State<MenuItemCard>
                                 gradient: LinearGradient(
                                   colors: [
                                     AppColors.surfaceVariantDark,
-                                    AppColors.surfaceVariantDark.withOpacity(0.7),
+                                    AppColors.surfaceVariantDark.withOpacity(
+                                      0.7,
+                                    ),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                               ),
-                              child: widget.item.imageUrl != null &&
+                              child:
+                                  widget.item.imageUrl != null &&
                                       widget.item.imageUrl!.isNotEmpty
                                   ? CachedNetworkImage(
                                       imageUrl: widget.item.imageUrl!,
@@ -141,16 +136,18 @@ class _MenuItemCardState extends State<MenuItemCard>
                                           ),
                                         ),
                                       ),
-                                      errorWidget: (context, url, error) => Container(
-                                        color: AppColors.surfaceVariantDark,
-                                        child: Center(
-                                          child: Icon(
-                                            Icons.restaurant_menu,
-                                            color: AppColors.textTertiaryDark,
-                                            size: 32,
+                                      errorWidget: (context, url, error) =>
+                                          Container(
+                                            color: AppColors.surfaceVariantDark,
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.restaurant_menu,
+                                                color:
+                                                    AppColors.textTertiaryDark,
+                                                size: 32,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
                                     )
                                   : Center(
                                       child: Icon(
@@ -160,7 +157,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                                       ),
                                     ),
                             ),
-                            
+
                             // Gradient overlay
                             Positioned.fill(
                               child: Container(
@@ -176,7 +173,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                                 ),
                               ),
                             ),
-                            
+
                             // Veg/Non-veg indicator
                             Positioned(
                               top: 12,
@@ -203,7 +200,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                                 ),
                               ),
                             ),
-                            
+
                             // Spicy indicator
                             if (widget.item.isSpicy)
                               Positioned(
@@ -232,7 +229,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                           ],
                         ),
                       ),
-                      
+
                       // Content section
                       Expanded(
                         flex: 2,
@@ -278,9 +275,9 @@ class _MenuItemCardState extends State<MenuItemCard>
                                   ),
                                 ],
                               ),
-                              
+
                               const SizedBox(height: 6),
-                              
+
                               // Description
                               if (widget.item.description != null &&
                                   widget.item.description!.isNotEmpty)
@@ -296,11 +293,11 @@ class _MenuItemCardState extends State<MenuItemCard>
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              
+
                               const SizedBox(height: 8),
-                              
+
                               // Add to cart button or quantity controls
-                              if (widget.quantity > 0) 
+                              if (widget.quantity > 0)
                                 // Quantity controls when item is in cart
                                 Container(
                                   decoration: BoxDecoration(
@@ -308,7 +305,9 @@ class _MenuItemCardState extends State<MenuItemCard>
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.primary.withOpacity(0.3),
+                                        color: AppColors.primary.withOpacity(
+                                          0.3,
+                                        ),
                                         blurRadius: 6,
                                         offset: const Offset(0, 3),
                                       ),
@@ -328,11 +327,13 @@ class _MenuItemCardState extends State<MenuItemCard>
                                           ),
                                         ),
                                       ),
-                                      
+
                                       // Quantity display
                                       Expanded(
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(vertical: 8),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
                                           child: Text(
                                             '${widget.quantity}',
                                             textAlign: TextAlign.center,
@@ -344,7 +345,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                                           ),
                                         ),
                                       ),
-                                      
+
                                       // Increment button
                                       GestureDetector(
                                         onTap: widget.onIncrement,
@@ -368,10 +369,16 @@ class _MenuItemCardState extends State<MenuItemCard>
                                     onTapDown: _handleTapDown,
                                     onTapUp: _handleTapUp,
                                     onTapCancel: _handleTapCancel,
-                                    onTap: widget.isLocked ? null : widget.onAddToCart,
+                                    onTap: widget.isLocked
+                                        ? null
+                                        : widget.onAddToCart,
                                     child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: widget.isLocked
                                             ? AppColors.textTertiaryDark
@@ -381,14 +388,16 @@ class _MenuItemCardState extends State<MenuItemCard>
                                             ? null
                                             : [
                                                 BoxShadow(
-                                                  color: AppColors.primary.withOpacity(0.3),
+                                                  color: AppColors.primary
+                                                      .withOpacity(0.3),
                                                   blurRadius: 6,
                                                   offset: const Offset(0, 3),
                                                 ),
                                               ],
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             widget.isLocked
@@ -401,9 +410,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            widget.isLocked
-                                                ? 'Locked'
-                                                : 'Add',
+                                            widget.isLocked ? 'Locked' : 'Add',
                                             style: TextStyle(
                                               color: widget.isLocked
                                                   ? AppColors.textSecondaryDark

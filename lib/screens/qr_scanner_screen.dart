@@ -30,14 +30,15 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   Future<void> _checkPermission() async {
     final status = await Permission.camera.status;
-    
+
     if (status.isDenied || status.isRestricted) {
       // Request permission
       final result = await Permission.camera.request();
       setState(() {
         hasPermission = result.isGranted;
         if (result.isPermanentlyDenied) {
-          errorMessage = 'Camera permission is permanently denied. Please enable it in Settings.';
+          errorMessage =
+              'Camera permission is permanently denied. Please enable it in Settings.';
         } else if (result.isDenied) {
           errorMessage = 'Camera permission is required to scan QR codes';
         }
@@ -45,7 +46,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     } else if (status.isPermanentlyDenied) {
       setState(() {
         hasPermission = false;
-        errorMessage = 'Camera permission is permanently denied. Please enable it in Settings.';
+        errorMessage =
+            'Camera permission is permanently denied. Please enable it in Settings.';
       });
     } else {
       setState(() {
@@ -320,7 +322,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          
+
           // Primary action buttons
           SizedBox(
             width: double.infinity,
@@ -334,9 +336,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               child: const Text('Open Settings'),
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
@@ -347,9 +349,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               child: const Text('Check Permission Again'),
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Debug bypass section
           Container(
             padding: const EdgeInsets.all(16),
@@ -365,11 +367,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.bug_report,
-                      color: AppColors.warning,
-                      size: 20,
-                    ),
+                    Icon(Icons.bug_report, color: AppColors.warning, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       'Debug Mode',
@@ -401,10 +399,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.skip_next,
-                          size: 20,
-                        ),
+                        Icon(Icons.skip_next, size: 20),
                         const SizedBox(width: 8),
                         const Text('Skip & Continue with Demo'),
                       ],

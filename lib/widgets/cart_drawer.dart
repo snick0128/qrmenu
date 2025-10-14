@@ -36,20 +36,12 @@ class _CartDrawerState extends State<CartDrawer>
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
-    _slideAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+    _slideAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
     _animationController.forward();
   }
 
@@ -103,20 +95,23 @@ class _CartDrawerState extends State<CartDrawer>
                 ),
               ),
             ),
-            
+
             // Cart drawer
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
               child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 1),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: _animationController,
-                  curve: Curves.easeOut,
-                )),
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 1),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _animationController,
+                        curve: Curves.easeOut,
+                      ),
+                    ),
                 child: Container(
                   height: MediaQuery.of(context).size.height * 0.8,
                   decoration: BoxDecoration(
@@ -144,7 +139,7 @@ class _CartDrawerState extends State<CartDrawer>
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      
+
                       // Header
                       Padding(
                         padding: const EdgeInsets.all(24),
@@ -200,7 +195,7 @@ class _CartDrawerState extends State<CartDrawer>
                           ],
                         ),
                       ),
-                      
+
                       // Cart items
                       Expanded(
                         child: Consumer<CartProvider>(
@@ -236,26 +231,45 @@ class _CartDrawerState extends State<CartDrawer>
                                 ),
                               );
                             }
-                            
+
                             return ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
                               itemCount: cartProvider.items.length,
-                              separatorBuilder: (context, index) => const SizedBox(height: 16),
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 16),
                               itemBuilder: (context, index) {
                                 final item = cartProvider.items[index];
                                 return _CartItemCard(
                                   item: item.toCartItemModel(),
                                   sessionType: widget.sessionType,
-                                  onIncrease: _canModifyItem(item.status?.name ?? 'pending')
-                                      ? () => cartProvider.increaseItemQuantity(index)
+                                  onIncrease:
+                                      _canModifyItem(
+                                        item.status?.name ?? 'pending',
+                                      )
+                                      ? () => cartProvider.increaseItemQuantity(
+                                          index,
+                                        )
                                       : null,
-                                  onDecrease: _canModifyItem(item.status?.name ?? 'pending')
-                                      ? () => cartProvider.decreaseItemQuantity(index)
+                                  onDecrease:
+                                      _canModifyItem(
+                                        item.status?.name ?? 'pending',
+                                      )
+                                      ? () => cartProvider.decreaseItemQuantity(
+                                          index,
+                                        )
                                       : null,
-                                  onRemove: _canModifyItem(item.status?.name ?? 'pending')
+                                  onRemove:
+                                      _canModifyItem(
+                                        item.status?.name ?? 'pending',
+                                      )
                                       ? () => cartProvider.removeItem(index)
                                       : null,
-                                  onReorder: _canReorderItem(item.status?.name ?? 'pending')
+                                  onReorder:
+                                      _canReorderItem(
+                                        item.status?.name ?? 'pending',
+                                      )
                                       ? () => cartProvider.reorderItem(index)
                                       : null,
                                 );
@@ -264,7 +278,7 @@ class _CartDrawerState extends State<CartDrawer>
                           },
                         ),
                       ),
-                      
+
                       // Bottom summary and checkout
                       Container(
                         padding: const EdgeInsets.all(24),
@@ -290,7 +304,8 @@ class _CartDrawerState extends State<CartDrawer>
                                 children: [
                                   // Order summary
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         'Total (${cartProvider.itemCount} items)',
@@ -309,9 +324,9 @@ class _CartDrawerState extends State<CartDrawer>
                                       ),
                                     ],
                                   ),
-                                  
+
                                   const SizedBox(height: 20),
-                                  
+
                                   // Action buttons for dine-in vs parcel
                                   if (widget.sessionType == 'dine_in')
                                     // Dine-in: Place Order (adds to session)
@@ -322,23 +337,41 @@ class _CartDrawerState extends State<CartDrawer>
                                               ? null
                                               : () async {
                                                   try {
-                                                    await cartProvider.placeOrder();
+                                                    await cartProvider
+                                                        .placeOrder();
                                                     _closeDrawer();
                                                     if (context.mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                      ScaffoldMessenger.of(
+                                                        context,
+                                                      ).showSnackBar(
                                                         SnackBar(
-                                                          content: Text('Order sent to kitchen! Continue browsing menu.'),
-                                                          backgroundColor: AppColors.success,
-                                                          behavior: SnackBarBehavior.floating,
-                                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                          content: Text(
+                                                            'Order sent to kitchen! Continue browsing menu.',
+                                                          ),
+                                                          backgroundColor:
+                                                              AppColors.success,
+                                                          behavior:
+                                                              SnackBarBehavior
+                                                                  .floating,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  12,
+                                                                ),
+                                                          ),
                                                         ),
                                                       );
                                                     }
                                                   } catch (e) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
                                                       SnackBar(
-                                                        content: Text('Error placing order: $e'),
-                                                        backgroundColor: AppColors.error,
+                                                        content: Text(
+                                                          'Error placing order: $e',
+                                                        ),
+                                                        backgroundColor:
+                                                            AppColors.error,
                                                       ),
                                                     );
                                                   }
@@ -346,15 +379,20 @@ class _CartDrawerState extends State<CartDrawer>
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.primary,
                                             foregroundColor: Colors.black,
-                                            padding: const EdgeInsets.symmetric(vertical: 16),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 16,
+                                            ),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
                                             ),
                                             elevation: 8,
-                                            shadowColor: AppColors.primary.withOpacity(0.4),
+                                            shadowColor: AppColors.primary
+                                                .withOpacity(0.4),
                                           ),
                                           child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Icon(Icons.restaurant, size: 20),
                                               const SizedBox(width: 8),
@@ -382,15 +420,21 @@ class _CartDrawerState extends State<CartDrawer>
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: AppColors.primary,
                                         foregroundColor: Colors.black,
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 16,
+                                        ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                         ),
                                         elevation: 8,
-                                        shadowColor: AppColors.primary.withOpacity(0.4),
+                                        shadowColor: AppColors.primary
+                                            .withOpacity(0.4),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(Icons.payment, size: 20),
                                           const SizedBox(width: 8),
@@ -479,11 +523,10 @@ class _CartItemCard extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Status badge
-              if (item.status != null)
-                ItemStatusBadge(status: item.status!),
-              
+              if (item.status != null) ItemStatusBadge(status: item.status!),
+
               // Counter badge if no status
               if (item.addedByCounter == true)
                 Container(
@@ -494,9 +537,7 @@ class _CartItemCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.info.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: AppColors.info.withOpacity(0.5),
-                    ),
+                    border: Border.all(color: AppColors.info.withOpacity(0.5)),
                   ),
                   child: Text(
                     'Added by Counter',
@@ -509,9 +550,9 @@ class _CartItemCard extends StatelessWidget {
                 ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Quantity controls and actions
           Row(
             children: [
@@ -539,7 +580,7 @@ class _CartItemCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       // Quantity
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -552,7 +593,7 @@ class _CartItemCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       // Increase button
                       GestureDetector(
                         onTap: onIncrease,
@@ -570,7 +611,7 @@ class _CartItemCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              
+
               // If no quantity controls available, show quantity
               if (onDecrease == null && onIncrease == null)
                 Container(
@@ -591,9 +632,9 @@ class _CartItemCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              
+
               const Spacer(),
-              
+
               // Action buttons
               Row(
                 children: [
@@ -628,7 +669,7 @@ class _CartItemCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  
+
                   // Remove button
                   if (onRemove != null) ...[
                     if (onReorder != null) const SizedBox(width: 8),
@@ -648,7 +689,7 @@ class _CartItemCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                  
+
                   // Total price
                   const SizedBox(width: 12),
                   Text(

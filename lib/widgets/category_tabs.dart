@@ -23,9 +23,10 @@ class CategoryTabs extends StatelessWidget {
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
-          final isSelected = (category == 'All' && selectedCategory.isEmpty) ||
-                           category == selectedCategory;
-          
+          final isSelected =
+              (category == 'All' && selectedCategory.isEmpty) ||
+              category == selectedCategory;
+
           return Container(
             margin: const EdgeInsets.only(right: 8),
             child: FilterChip(
@@ -42,7 +43,9 @@ class CategoryTabs extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? AppColors.primary : AppColors.textTertiary,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textTertiary,
                 ),
               ),
             ),

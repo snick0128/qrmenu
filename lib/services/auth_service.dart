@@ -1,22 +1,36 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// AuthService: lightweight wrapper around FirebaseAuth for anonymous guest
-/// sign-in. All functions use async/await and handle errors with debug prints.
+/// AuthService: handles Firebase Authentication with persistence support
 class AuthService {
   AuthService._();
 
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  /// Initialize auth service and set persistence
+  static Future<void> initialize() async {
+    try {
+      await _auth.setPersistence(Persistence.LOCAL);
+      print('AuthService: persistence set to LOCAL');
+    } catch (e, st) {
+      print('AuthService: failed to set persistence: $e');
+      print(st);
+    }
+  }
+
   /// Sign in anonymously as a guest. Returns the [User] on success or null on
   /// failure.
   static Future<User?> signInAsGuest() async {
     try {
-      final userCredential = await _auth.signInAnonymously();
-      final user = userCredential.user;
-      if (user != null) {
-        print('AuthService: signed in anonymously, uid=${user.uid}');
+      // Try to use existing anonymous user first
+      User? user = _auth.currentUser;
+
+      // If no existing user, create new anonymous account
+      if (user == null) {
+        final userCredential = await _auth.signInAnonymously();
+        user = userCredential.user;
+        print('AuthService: created new anonymous user, uid=${user?.uid}');
       } else {
-        print('AuthService: anonymous sign-in returned no user');
+        print('AuthService: using existing anonymous user, uid=${user.uid}');
       }
       return user;
     } catch (e, st) {

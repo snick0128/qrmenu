@@ -9,11 +9,7 @@ class YourOrderScreen extends StatefulWidget {
   final String sessionId;
   final String? tableNumber;
 
-  const YourOrderScreen({
-    super.key,
-    required this.sessionId,
-    this.tableNumber,
-  });
+  const YourOrderScreen({super.key, required this.sessionId, this.tableNumber});
 
   @override
   State<YourOrderScreen> createState() => _YourOrderScreenState();
@@ -31,13 +27,9 @@ class _YourOrderScreenState extends State<YourOrderScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
     _animationController.forward();
   }
 
@@ -49,14 +41,16 @@ class _YourOrderScreenState extends State<YourOrderScreen>
 
   void _completeSession() async {
     final cartProvider = context.read<CartProvider>();
-    
+
     if (cartProvider.sessionItems.isEmpty && cartProvider.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('No items ordered yet!'),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -82,8 +76,14 @@ class _YourOrderScreenState extends State<YourOrderScreen>
         opacity: _fadeAnimation,
         child: Consumer<CartProvider>(
           builder: (context, cartProvider, child) {
-            final allItems = [...cartProvider.sessionItems, ...cartProvider.items];
-            final sessionTotal = cartProvider.sessionItems.fold(0.0, (sum, item) => sum + item.totalPrice);
+            final allItems = [
+              ...cartProvider.sessionItems,
+              ...cartProvider.items,
+            ];
+            final sessionTotal = cartProvider.sessionItems.fold(
+              0.0,
+              (sum, item) => sum + item.totalPrice,
+            );
             final currentCartTotal = cartProvider.totalAmount;
             final grandTotal = sessionTotal + currentCartTotal;
 
@@ -133,7 +133,8 @@ class _YourOrderScreenState extends State<YourOrderScreen>
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Your Order',
@@ -171,9 +172,9 @@ class _YourOrderScreenState extends State<YourOrderScreen>
                                   ),
                                 ),
                                 child: Text(
-                                  allItems.isEmpty 
-                                    ? 'No items ordered yet'
-                                    : '${allItems.length} items • ₹${grandTotal.toStringAsFixed(0)}',
+                                  allItems.isEmpty
+                                      ? 'No items ordered yet'
+                                      : '${allItems.length} items • ₹${grandTotal.toStringAsFixed(0)}',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
@@ -235,7 +236,9 @@ class _YourOrderScreenState extends State<YourOrderScreen>
                               ],
                             ),
                             const SizedBox(height: 16),
-                            ...cartProvider.sessionItems.map((item) => _buildOrderItem(item, true)),
+                            ...cartProvider.sessionItems.map(
+                              (item) => _buildOrderItem(item, true),
+                            ),
                             if (cartProvider.items.isNotEmpty) ...[
                               const SizedBox(height: 24),
                               Divider(color: AppColors.surfaceVariantDark),
@@ -273,7 +276,9 @@ class _YourOrderScreenState extends State<YourOrderScreen>
                               ],
                             ),
                             const SizedBox(height: 16),
-                            ...cartProvider.items.map((item) => _buildOrderItem(item, false)),
+                            ...cartProvider.items.map(
+                              (item) => _buildOrderItem(item, false),
+                            ),
                           ],
 
                           // Total
@@ -385,9 +390,7 @@ class _YourOrderScreenState extends State<YourOrderScreen>
                   ),
 
                 // Bottom padding
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 100),
-                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
               ],
             );
           },
@@ -401,12 +404,12 @@ class _YourOrderScreenState extends State<YourOrderScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isSentToKitchen 
+        color: isSentToKitchen
             ? AppColors.success.withOpacity(0.05)
             : AppColors.warning.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSentToKitchen 
+          color: isSentToKitchen
               ? AppColors.success.withOpacity(0.2)
               : AppColors.warning.withOpacity(0.2),
         ),
@@ -433,7 +436,8 @@ class _YourOrderScreenState extends State<YourOrderScreen>
                     fontSize: 14,
                   ),
                 ),
-                if (item.specialInstructions != null && item.specialInstructions!.isNotEmpty) ...[
+                if (item.specialInstructions != null &&
+                    item.specialInstructions!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     'Note: ${item.specialInstructions}',
@@ -451,8 +455,7 @@ class _YourOrderScreenState extends State<YourOrderScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (isSentToKitchen)
-                ItemStatusBadge(status: item.status.name),
+              if (isSentToKitchen) ItemStatusBadge(status: item.status.name),
               const SizedBox(height: 8),
               Text(
                 '₹${item.totalPrice.toStringAsFixed(0)}',

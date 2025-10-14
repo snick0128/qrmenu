@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/menu_item_model.dart';
 import '../models/cart_item_model.dart';
 import '../services/firebase_service.dart';
+import '../services/order_service.dart';
 
 enum ItemStatus { pending, preparing, served }
 
@@ -41,7 +43,7 @@ class CartItem {
   }
 
   double get totalPrice => menuItem.price * quantity;
-  
+
   // Convert to CartItemModel for UI compatibility
   CartItemModel toCartItemModel() {
     return CartItemModel(
@@ -76,12 +78,15 @@ class CartProvider with ChangeNotifier {
   }
 
   List<CartItem> _items = [];
-  List<CartItem> _sessionItems = []; // All items from the entire session (dine-in)
+  List<CartItem> _sessionItems =
+      []; // All items from the entire session (dine-in)
   String? _sessionId;
   String? _sessionType;
   String? _tableNumber;
   bool _isOrderPlaced = false;
   bool _isLoading = false;
+  String? _hotelId; // Added to track hotel ID
+  String? _orderId; // Added to track active order ID
 
   // Getters
   List<CartItem> get items => List.unmodifiable(_items);
@@ -106,15 +111,30 @@ class CartProvider with ChangeNotifier {
       _items.where((item) => item.status == ItemStatus.served).toList();
 
   // Initialize session
-  void initializeSession(
+  Future<void> initializeSession(
     String sessionId,
     String sessionType, {
     String? tableNumber,
-  }) {
+  }) async {
     _sessionId = sessionId;
     _sessionType = sessionType;
     _tableNumber = tableNumber;
     _isOrderPlaced = false;
+
+    // Get hotel ID if table number is provided
+    if (tableNumber != null) {
+      final tableDoc = await FirebaseService.accessCodes.doc(tableNumber).get();
+      if (tableDoc.exists) {
+        final data = tableDoc.data() as Map<String, dynamic>;
+        _hotelId = data['restaurantId'] as String?;
+      }
+    }
+
+    // For dine-in, try to get existing order ID
+    if (_sessionType == 'dine_in' && _hotelId != null) {
+      _orderId = await OrderService.getDineInOrder(_sessionId!);
+    }
+
     notifyListeners();
   }
 
@@ -282,24 +302,50 @@ class CartProvider with ChangeNotifier {
       throw Exception('Cart is empty');
     }
 
+    if (_hotelId == null) {
+      throw Exception('Restaurant not found');
+    }
+
     _isLoading = true;
     notifyListeners();
 
     try {
+      // Note: Analytics tracking is handled inside createOrder method
+
       if (_sessionType == 'dine_in') {
-        // Dine-in: Move items to session and clear cart for next order
+        if (_orderId == null) {
+          // Create new order for dine-in session
+          _orderId = await OrderService.createOrder(
+            hotelId: _hotelId!,
+            tableNo: _tableNumber ?? 'unknown',
+            type: 'dine_in',
+            items: _items.map((i) => i.toCartItemModel()).toList(),
+            total: grandTotal,
+            sessionId: _sessionId,
+          );
+        }
+
+        // Move items to session and clear cart for next order
         for (final item in _items) {
           final sessionItem = item.copyWith(status: ItemStatus.preparing);
           _sessionItems.add(sessionItem);
         }
-        
+
         // Clear current cart for next order
         _items.clear();
         _isOrderPlaced = false; // Allow more orders
       } else {
-        // Parcel: Mark as order placed
+        // Create new parcel order each time
+        _orderId = await OrderService.createOrder(
+          hotelId: _hotelId!,
+          tableNo: _tableNumber ?? 'unknown',
+          type: 'parcel',
+          items: _items.map((i) => i.toCartItemModel()).toList(),
+          total: grandTotal,
+        );
+
         _isOrderPlaced = true;
-        
+
         // Update all pending items to preparing
         for (int i = 0; i < _items.length; i++) {
           if (_items[i].status == ItemStatus.pending) {
@@ -381,7 +427,7 @@ class CartProvider with ChangeNotifier {
             },
           )
           .toList();
-          
+
       final sessionItemsData = _sessionItems
           .map(
             (item) => {
@@ -398,12 +444,43 @@ class CartProvider with ChangeNotifier {
           .toList();
 
       if (_sessionType == 'dine_in') {
-        final sessionTotal = _sessionItems.fold(0.0, (sum, item) => sum + item.totalPrice);
+        final sessionTotal = _sessionItems.fold(
+          0.0,
+          (sum, item) => sum + item.totalPrice,
+        );
+
+        // Update dine-in session document under the table's restaurant
+        if (_tableNumber != null) {
+          // First, get the restaurant ID from the table's access code
+          final tableDoc = await FirebaseService.accessCodes
+              .doc(_tableNumber)
+              .get();
+          if (tableDoc.exists) {
+            final data = tableDoc.data() as Map<String, dynamic>;
+            final hotelId = data['restaurantId'] as String?;
+            if (hotelId != null) {
+              // Update the session under the correct restaurant
+              await FirebaseService.restaurants
+                  .doc(hotelId)
+                  .collection('dineSessions')
+                  .doc(_sessionId)
+                  .update({
+                    'items': itemsData, // Current cart items
+                    'sessionItems': sessionItemsData, // All session items
+                    'totalAmount': totalAmount, // Current cart total
+                    'sessionTotalAmount': sessionTotal, // Total session amount
+                  });
+              return;
+            }
+          }
+        }
+
+        // Fallback to old path if restaurant ID not found
         await FirebaseService.dineInSessions.doc(_sessionId).update({
-          'items': itemsData, // Current cart items
-          'sessionItems': sessionItemsData, // All session items
-          'totalAmount': totalAmount, // Current cart total
-          'sessionTotalAmount': sessionTotal, // Total session amount
+          'items': itemsData,
+          'sessionItems': sessionItemsData,
+          'totalAmount': totalAmount,
+          'sessionTotalAmount': sessionTotal,
         });
       } else {
         await FirebaseService.orders.doc(_sessionId).update({
@@ -451,15 +528,41 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final collection = sessionType == 'dine_in'
-          ? FirebaseService.dineInSessions
-          : FirebaseService.orders;
+      DocumentSnapshot? doc;
 
-      final doc = await collection.doc(sessionId).get();
+      if (sessionType == 'dine_in' && _tableNumber != null) {
+        // Try to get the restaurant ID from the table's access code
+        final tableDoc = await FirebaseService.accessCodes
+            .doc(_tableNumber)
+            .get();
+        if (tableDoc.exists) {
+          final data = tableDoc.data() as Map<String, dynamic>;
+          final hotelId = data['restaurantId'] as String?;
+          if (hotelId != null) {
+            // Get the session from the restaurant's dine sessions
+            doc = await FirebaseService.restaurants
+                .doc(hotelId)
+                .collection('dineSessions')
+                .doc(sessionId)
+                .get();
+          }
+        }
+      }
+
+      // Fallback to old paths if restaurant-specific path failed
+      if (doc == null) {
+        final collection = sessionType == 'dine_in'
+            ? FirebaseService.dineInSessions
+            : FirebaseService.orders;
+        doc = await collection.doc(sessionId).get();
+      }
+
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         final itemsData = List<Map<String, dynamic>>.from(data['items'] ?? []);
-        final sessionItemsData = List<Map<String, dynamic>>.from(data['sessionItems'] ?? []);
+        final sessionItemsData = List<Map<String, dynamic>>.from(
+          data['sessionItems'] ?? [],
+        );
 
         _items = itemsData.map((itemData) {
           // Create a basic MenuItemModel from the stored data
@@ -485,7 +588,7 @@ class CartProvider with ChangeNotifier {
             isReorder: itemData['isReorder'] ?? false,
           );
         }).toList();
-        
+
         // Load session items for dine-in
         if (sessionType == 'dine_in') {
           _sessionItems = sessionItemsData.map((itemData) {
@@ -507,7 +610,8 @@ class CartProvider with ChangeNotifier {
               ),
               specialInstructions: itemData['specialInstructions'],
               addedAt:
-                  DateTime.tryParse(itemData['addedAt'] ?? '') ?? DateTime.now(),
+                  DateTime.tryParse(itemData['addedAt'] ?? '') ??
+                  DateTime.now(),
               isReorder: itemData['isReorder'] ?? false,
             );
           }).toList();

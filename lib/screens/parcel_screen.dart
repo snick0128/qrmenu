@@ -43,44 +43,61 @@ class _ParcelScreenState extends State<ParcelScreen>
     _initializeSession();
   }
 
-  void _initializeSession() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+  Future<void> _initializeSession() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null) {
         _sessionId = args['sessionId'];
-        
+        final hotelId = args['hotelId'] as String?;
+
         // Initialize cart provider with parcel session
-        context.read<CartProvider>().initializeSession(
-          _sessionId!,
-          'parcel',
-        );
-        
+        context.read<CartProvider>().initializeSession(_sessionId!, 'parcel');
+
         // Load existing cart from Firebase
         context.read<CartProvider>().loadFromFirebase(_sessionId!, 'parcel');
-        
-        // Initialize menu data
-        context.read<MenuProvider>().initializeWithFirebaseData();
-        
+
+        if (hotelId != null) {
+          // Initialize menu data with hotel ID
+          await context.read<MenuProvider>().initializeWithFirebaseData(
+            hotelId,
+          );
+        } else {
+          // Fallback to default restaurant
+          await context.read<MenuProvider>().initializeWithMockData();
+        }
+
         // Set up real-time listener for order updates
-        _setupOrderListener();
+        _setupOrderListener(hotelId);
       }
     });
   }
 
-  void _setupOrderListener() {
+  void _setupOrderListener(String? hotelId) {
     if (_sessionId != null) {
-      _orderListener = FirebaseService.orders
-          .doc(_sessionId)
-          .snapshots()
-          .listen((snapshot) {
+      CollectionReference ordersCollection;
+
+      if (hotelId != null) {
+        // Use restaurant's orders collection
+        ordersCollection = FirebaseService.restaurants
+            .doc(hotelId)
+            .collection('orders');
+      } else {
+        // Fallback to old collection
+        ordersCollection = FirebaseService.orders;
+      }
+
+      _orderListener = ordersCollection.doc(_sessionId).snapshots().listen((
+        snapshot,
+      ) {
         if (mounted && snapshot.exists) {
           final data = snapshot.data() as Map<String, dynamic>;
           final status = data['status'] as String?;
-          
+
           setState(() {
             _orderStatus = status;
           });
-          
+
           if (status == 'completed') {
             // Show completion dialog
             _showOrderCompletedDialog();
@@ -96,16 +113,10 @@ class _ParcelScreenState extends State<ParcelScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(
-              Icons.check_circle,
-              color: AppColors.success,
-              size: 32,
-            ),
+            Icon(Icons.check_circle, color: AppColors.success, size: 32),
             const SizedBox(width: 12),
             Text(
               'Order Completed!',
@@ -133,16 +144,11 @@ class _ParcelScreenState extends State<ParcelScreen>
               decoration: BoxDecoration(
                 color: AppColors.success.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.success.withOpacity(0.3),
-                ),
+                border: Border.all(color: AppColors.success.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.location_on,
-                    color: AppColors.success,
-                  ),
+                  Icon(Icons.location_on, color: AppColors.success),
                   const SizedBox(width: 12),
                   Text(
                     'Please collect from counter',
@@ -159,11 +165,7 @@ class _ParcelScreenState extends State<ParcelScreen>
         actions: [
           ElevatedButton(
             onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/',
-                (route) => false,
-              );
+              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -189,7 +191,7 @@ class _ParcelScreenState extends State<ParcelScreen>
 
   void _addToCart(MenuItemModel item) {
     final cartProvider = context.read<CartProvider>();
-    
+
     // Check if order is locked
     if (_orderStatus != null && _orderStatus != 'pending') {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -197,14 +199,16 @@ class _ParcelScreenState extends State<ParcelScreen>
           content: const Text('Cannot add items once order is being prepared'),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
     }
-    
+
     cartProvider.addItem(item);
-    
+
     // Show feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -216,27 +220,31 @@ class _ParcelScreenState extends State<ParcelScreen>
       ),
     );
   }
-  
+
   void _incrementItem(MenuItemModel item) {
     final cartProvider = context.read<CartProvider>();
-    
+
     // Check if order is locked
     if (_orderStatus != null && _orderStatus != 'pending') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Cannot modify items once order is being prepared'),
+          content: const Text(
+            'Cannot modify items once order is being prepared',
+          ),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
     }
-    
+
     final itemIndex = cartProvider.items.indexWhere(
       (cartItem) => cartItem.menuItem.id == item.id,
     );
-    
+
     if (itemIndex >= 0) {
       cartProvider.increaseItemQuantity(itemIndex);
     } else {
@@ -244,27 +252,31 @@ class _ParcelScreenState extends State<ParcelScreen>
       cartProvider.addItem(item);
     }
   }
-  
+
   void _decrementItem(MenuItemModel item) {
     final cartProvider = context.read<CartProvider>();
-    
+
     // Check if order is locked
     if (_orderStatus != null && _orderStatus != 'pending') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Cannot modify items once order is being prepared'),
+          content: const Text(
+            'Cannot modify items once order is being prepared',
+          ),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
     }
-    
+
     final itemIndex = cartProvider.items.indexWhere(
       (cartItem) => cartItem.menuItem.id == item.id,
     );
-    
+
     if (itemIndex >= 0) {
       cartProvider.decreaseItemQuantity(itemIndex);
     }
@@ -281,10 +293,8 @@ class _ParcelScreenState extends State<ParcelScreen>
         onCheckout: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CheckoutScreen(
-              sessionId: _sessionId!,
-              sessionType: 'parcel',
-            ),
+            builder: (context) =>
+                CheckoutScreen(sessionId: _sessionId!, sessionType: 'parcel'),
           ),
         ),
       ),
@@ -330,290 +340,326 @@ class _ParcelScreenState extends State<ParcelScreen>
         opacity: _fadeAnimation,
         child: AnimatedPadding(
           // push the content up when keyboard appears so the search field isn't overlapped
-          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           duration: const Duration(milliseconds: 200),
           child: Consumer2<MenuProvider, CartProvider>(
             builder: (context, menuProvider, cartProvider, child) {
               return CustomScrollView(
                 slivers: [
-                // Premium App Bar
-                SliverAppBar(
-                  expandedHeight: 240,
-                  pinned: true,
-                  backgroundColor: Colors.transparent,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.secondary.withOpacity(0.8),
-                            AppColors.primary.withOpacity(0.6),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                  // Premium App Bar
+                  SliverAppBar(
+                    expandedHeight: 240,
+                    pinned: true,
+                    backgroundColor: Colors.transparent,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.secondary.withOpacity(0.8),
+                              AppColors.primary.withOpacity(0.6),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
-                      ),
-                      child: SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Spacer(),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
+                        child: SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Spacer(),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.glassDark,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: AppColors.glassDark
+                                              .withOpacity(0.75),
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Icons.takeout_dining,
+                                        color: AppColors.textPrimaryDark,
+                                        size: 28,
                                       ),
                                     ),
-                                    child: Icon(
-                                      Icons.takeout_dining,
-                                      color: Colors.white,
-                                      size: 28,
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Parcel Order',
+                                            style: TextStyle(
+                                              color: AppColors.textPrimaryDark,
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Quick takeaway service',
+                                            style: TextStyle(
+                                              color:
+                                                  AppColors.textSecondaryDark,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  ],
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                // Order Status Card
+                                if (_orderStatus != null)
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.glassDark.withOpacity(
+                                        0.375,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: _getStatusColor(
+                                          _orderStatus,
+                                        ).withOpacity(0.5),
+                                      ),
+                                    ),
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          'Parcel Order',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(
+                                              _orderStatus,
+                                            ),
+                                            shape: BoxShape.circle,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(width: 12),
                                         Text(
-                                          'Quick takeaway service',
+                                          _getStatusText(_orderStatus),
                                           style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
+                                            color: AppColors.textPrimaryDark,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
+                                        const Spacer(),
+                                        if (_orderStatus == 'preparing' ||
+                                            _orderStatus == 'ready')
+                                          Icon(
+                                            Icons.access_time,
+                                            color: AppColors.textSecondaryDark,
+                                            size: 16,
+                                          ),
                                       ],
                                     ),
                                   ),
-                                ],
-                              ),
-                              
-                              const SizedBox(height: 20),
-                              
-                              // Order Status Card
-                              if (_orderStatus != null)
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: _getStatusColor(_orderStatus).withOpacity(0.5),
+
+                                if (_orderStatus == null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
                                     ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 8,
-                                        height: 8,
-                                        decoration: BoxDecoration(
-                                          color: _getStatusColor(_orderStatus),
-                                          shape: BoxShape.circle,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.glassDark,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: AppColors.glassDark.withOpacity(
+                                          0.75,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        _getStatusText(_orderStatus),
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                    ),
+                                    child: Text(
+                                      'Order once locked • Online payment only',
+                                      style: TextStyle(
+                                        color: AppColors.textPrimaryDark,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                      const Spacer(),
-                                      if (_orderStatus == 'preparing' || _orderStatus == 'ready')
-                                        Icon(
-                                          Icons.access_time,
-                                          color: Colors.white70,
-                                          size: 16,
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              
-                              if (_orderStatus == null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.3),
                                     ),
                                   ),
-                                  child: Text(
-                                    'Order once locked • Online payment only',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                
-                // Menu Categories & Search
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        // Search Bar
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceDark,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: TextField(
-                            onChanged: (value) {
-                              final q = value.trim();
-                              if (_debounce?.isActive ?? false) _debounce!.cancel();
-                              _debounce = Timer(const Duration(milliseconds: 500), () {
-                                // set empty query to clear filters
-                                context.read<MenuProvider>().setSearchQuery(q);
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'Search quick bites...',
-                              hintStyle: TextStyle(
-                                color: AppColors.textSecondaryDark,
-                              ),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: AppColors.secondary,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 16,
-                              ),
+
+                  // Menu Categories & Search
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          // Search Bar
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceDark,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.cardShadowDark,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                            style: TextStyle(
-                              color: AppColors.textPrimaryDark,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // Category Tabs
-                        if (menuProvider.categories.isNotEmpty)
-                          SizedBox(
-                            height: 50,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: menuProvider.categories.length,
-                              itemBuilder: (context, index) {
-                                final category = menuProvider.categories[index];
-                                final isSelected = category == menuProvider.selectedCategory;
-                                
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 12),
-                                  child: FilterChip(
-                                    label: Text(category),
-                                    selected: isSelected,
-                                    onSelected: (selected) {
-                                      menuProvider.selectCategory(
-                                        selected ? category : '',
-                                      );
-                                    },
-                                    backgroundColor: AppColors.surfaceDark,
-                                    selectedColor: AppColors.secondary.withOpacity(0.2),
-                                    checkmarkColor: AppColors.secondary,
-                                    labelStyle: TextStyle(
-                                      color: isSelected
-                                          ? AppColors.secondary
-                                          : AppColors.textSecondaryDark,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
-                                    ),
-                                    side: BorderSide(
-                                      color: isSelected
-                                          ? AppColors.secondary
-                                          : AppColors.surfaceVariantDark,
-                                    ),
-                                  ),
+                            child: TextField(
+                              onChanged: (value) {
+                                final q = value.trim();
+                                if (_debounce?.isActive ?? false)
+                                  _debounce!.cancel();
+                                _debounce = Timer(
+                                  const Duration(milliseconds: 500),
+                                  () {
+                                    // set empty query to clear filters
+                                    context.read<MenuProvider>().setSearchQuery(
+                                      q,
+                                    );
+                                  },
                                 );
                               },
+                              decoration: InputDecoration(
+                                hintText: 'Search quick bites...',
+                                hintStyle: TextStyle(
+                                  color: AppColors.textSecondaryDark,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: AppColors.secondary,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 16,
+                                ),
+                              ),
+                              style: TextStyle(
+                                color: AppColors.textPrimaryDark,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
-                      ],
+
+                          const SizedBox(height: 24),
+
+                          // Category Tabs
+                          if (menuProvider.categories.isNotEmpty)
+                            SizedBox(
+                              height: 50,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: menuProvider.categories.length,
+                                itemBuilder: (context, index) {
+                                  final category =
+                                      menuProvider.categories[index];
+                                  final isSelected =
+                                      category == menuProvider.selectedCategory;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 12),
+                                    child: FilterChip(
+                                      label: Text(category),
+                                      selected: isSelected,
+                                      onSelected: (selected) {
+                                        menuProvider.selectCategory(
+                                          selected ? category : '',
+                                        );
+                                      },
+                                      backgroundColor: AppColors.surfaceDark,
+                                      selectedColor: AppColors.secondary
+                                          .withOpacity(0.2),
+                                      checkmarkColor: AppColors.secondary,
+                                      labelStyle: TextStyle(
+                                        color: isSelected
+                                            ? AppColors.secondary
+                                            : AppColors.textSecondaryDark,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                      ),
+                                      side: BorderSide(
+                                        color: isSelected
+                                            ? AppColors.secondary
+                                            : AppColors.surfaceVariantDark,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                
-                if (menuProvider.isLoading)
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: SliverGrid(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : 
-                                       MediaQuery.of(context).size.width < 900 ? 3 : 4,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: MediaQuery.of(context).size.width < 600 ? 0.75 : 0.8,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
+
+                  if (menuProvider.isLoading)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                              MediaQuery.of(context).size.width < 600
+                              ? 2
+                              : MediaQuery.of(context).size.width < 900
+                              ? 3
+                              : 4,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio:
+                              MediaQuery.of(context).size.width < 600
+                              ? 0.75
+                              : 0.8,
+                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
                           return const MenuItemShimmer();
-                        },
-                        childCount: 6,
+                        }, childCount: 6),
                       ),
                     ),
-                  ),
-                
-                if (!menuProvider.isLoading && menuProvider.filteredMenuItems.isNotEmpty)
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: SliverGrid(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : 
-                                       MediaQuery.of(context).size.width < 900 ? 3 : 4,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: MediaQuery.of(context).size.width < 600 ? 0.75 : 0.8,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
+
+                  if (!menuProvider.isLoading &&
+                      menuProvider.filteredMenuItems.isNotEmpty)
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount:
+                              MediaQuery.of(context).size.width < 600
+                              ? 2
+                              : MediaQuery.of(context).size.width < 900
+                              ? 3
+                              : 4,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio:
+                              MediaQuery.of(context).size.width < 600
+                              ? 0.75
+                              : 0.8,
+                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
                           final item = menuProvider.filteredMenuItems[index];
                           return Consumer<CartProvider>(
                             builder: (context, cartProvider, _) {
-                              final quantity = cartProvider.getItemQuantity(item.id);
+                              final quantity = cartProvider.getItemQuantity(
+                                item.id,
+                              );
                               return MenuItemCard(
                                 item: item,
                                 onAddToCart: () => _addToCart(item),
@@ -624,102 +670,99 @@ class _ParcelScreenState extends State<ParcelScreen>
                               );
                             },
                           );
-                        },
-                        childCount: menuProvider.filteredMenuItems.length,
+                        }, childCount: menuProvider.filteredMenuItems.length),
                       ),
                     ),
-                  ),
-                
-                // Empty State
-                if (!menuProvider.isLoading && menuProvider.filteredMenuItems.isEmpty)
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.takeout_dining,
-                            size: 64,
-                            color: AppColors.textSecondaryDark,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No items found',
-                            style: TextStyle(
+
+                  // Empty State
+                  if (!menuProvider.isLoading &&
+                      menuProvider.filteredMenuItems.isEmpty)
+                    SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.takeout_dining,
+                              size: 64,
                               color: AppColors.textSecondaryDark,
-                              fontSize: 18,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            Text(
+                              'No items found',
+                              style: TextStyle(
+                                color: AppColors.textSecondaryDark,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                
-                // Bottom spacing for cart button
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 100),
-                ),
-              ],
-            );
-          },
+
+                  // Bottom spacing for cart button
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                ],
+              );
+            },
+          ),
         ),
       ),
-    ),
 
-    // Floating Cart Button
-    floatingActionButton: Builder(
-      builder: (context) {
-        final cartProvider = context.watch<CartProvider>();
-        if (cartProvider.itemCount == 0) return const SizedBox.shrink();
+      // Floating Cart Button
+      floatingActionButton: Builder(
+        builder: (context) {
+          final cartProvider = context.watch<CartProvider>();
+          if (cartProvider.itemCount == 0) return const SizedBox.shrink();
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 20),
-          child: FloatingActionButton.extended(
-            onPressed: _openCartDrawer,
-            backgroundColor: AppColors.secondary,
-            foregroundColor: Colors.white,
-            elevation: 8,
-            icon: Stack(
-              children: [
-                const Icon(Icons.shopping_bag),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '${cartProvider.itemCount}',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+          return Container(
+            margin: const EdgeInsets.only(bottom: 20),
+            child: FloatingActionButton.extended(
+              onPressed: _openCartDrawer,
+              backgroundColor: AppColors.secondary,
+              foregroundColor: Colors.white,
+              elevation: 8,
+              icon: Stack(
+                children: [
+                  const Icon(Icons.shopping_bag),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      textAlign: TextAlign.center,
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '${cartProvider.itemCount}',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
+                ],
+              ),
+              label: Text(
+                '₹${cartProvider.grandTotal.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
-            label: Text(
-              '₹${cartProvider.grandTotal.toStringAsFixed(0)}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-        );
-      },
-    ),
-    floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

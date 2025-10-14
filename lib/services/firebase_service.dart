@@ -33,7 +33,7 @@ class FirebaseService {
       _firestore?.settings = const Settings(
         cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
       );
-      
+
       print('FirebaseService: Firestore instance initialized');
     } catch (e) {
       print('Error initializing FirebaseService: $e');
@@ -52,14 +52,23 @@ class FirebaseService {
   static CollectionReference get orders => firestore.collection('orders');
   static CollectionReference get dineInSessions =>
       firestore.collection('dineInSessions');
-  static CollectionReference get menuItems => firestore.collection('menuItems');
-  static CollectionReference get categories =>
-      firestore.collection('categories');
   static CollectionReference get accessCodes =>
       firestore.collection('accessCodes');
   static CollectionReference get tableReservations =>
       firestore.collection('tableReservations');
-  static CollectionReference get restaurants => firestore.collection('restaurants');
+  static CollectionReference get restaurants =>
+      firestore.collection('restaurants');
+  static CollectionReference get analytics => firestore.collection('analytics');
+
+  // Get subcollections for a specific hotel
+  static CollectionReference getMenuCollection(String hotelId) =>
+      restaurants.doc(hotelId).collection('menu');
+
+  static CollectionReference getTablesCollection(String hotelId) =>
+      restaurants.doc(hotelId).collection('tables');
+
+  static CollectionReference getAnalyticsCollection(String hotelId) =>
+      restaurants.doc(hotelId).collection('analytics');
 
   // Debug method to list all access codes
   static Future<void> listAllAccessCodes() async {
@@ -74,14 +83,21 @@ class FirebaseService {
     }
   }
 
-  static Future<Map<String, dynamic>?> validateHotelAndTable(String hotelId, String tableNumber) async {
+  static Future<Map<String, dynamic>?> validateHotelAndTable(
+    String hotelId,
+    String tableNumber,
+  ) async {
     try {
       final restaurantDoc = await restaurants.doc(hotelId).get();
       if (!restaurantDoc.exists) {
         return null;
       }
 
-      final tableDoc = await restaurants.doc(hotelId).collection('tables').doc(tableNumber).get();
+      final tableDoc = await restaurants
+          .doc(hotelId)
+          .collection('tables')
+          .doc(tableNumber)
+          .get();
       if (!tableDoc.exists) {
         return null;
       }
@@ -94,19 +110,21 @@ class FirebaseService {
   }
 
   // Check table reservation status
-  static Future<Map<String, dynamic>> checkTableReservation(String tableNumber) async {
+  static Future<Map<String, dynamic>> checkTableReservation(
+    String tableNumber,
+  ) async {
     try {
       final reservationDoc = await tableReservations.doc(tableNumber).get();
-      
+
       if (!reservationDoc.exists) {
         return {
           'isReserved': false,
           'reservedBy': null,
           'sessionId': null,
-          'status': 'vacant'
+          'status': 'vacant',
         };
       }
-      
+
       final data = reservationDoc.data() as Map<String, dynamic>;
       final status = data['status'] as String? ?? 'occupied';
 
@@ -123,7 +141,7 @@ class FirebaseService {
         'isReserved': false,
         'reservedBy': null,
         'sessionId': null,
-        'status': 'error'
+        'status': 'error',
       };
     }
   }
@@ -136,7 +154,7 @@ class FirebaseService {
       if (reservation['isReserved'] && reservation['reservedBy'] != userId) {
         throw Exception('Table is already reserved by another guest');
       }
-      
+
       // Create or update reservation
       final reservationData = {
         'tableNumber': tableNumber,
@@ -145,9 +163,9 @@ class FirebaseService {
         'reservedAt': FieldValue.serverTimestamp(),
         'sessionId': null, // Will be updated when session is created
       };
-      
+
       await tableReservations.doc(tableNumber).set(reservationData);
-      
+
       // Create dine-in session
       final sessionRef = await dineInSessions.add({
         'userId': userId,
@@ -159,12 +177,12 @@ class FirebaseService {
         'paymentStatus': 'pending',
         'paymentMethod': null,
       });
-      
+
       // Update reservation with session ID
       await tableReservations.doc(tableNumber).update({
         'sessionId': sessionRef.id,
       });
-      
+
       return sessionRef.id;
     } catch (e) {
       print('Error reserving table: $e');
@@ -201,7 +219,7 @@ class FirebaseService {
 
       final data = codeDoc.data() as Map<String, dynamic>;
       print('Document data: $data');
-      
+
       final isActive = data['isActive'] ?? false;
       print('Is active: $isActive');
 
@@ -238,16 +256,16 @@ class FirebaseService {
     if (validation.isDineIn) {
       // Check table reservation for dine-in
       final reservation = await checkTableReservation(validation.tableNumber!);
-      
+
       if (reservation['isReserved'] && reservation['reservedBy'] != userId) {
         throw Exception('Table is reserved by another guest');
       }
-      
+
       if (reservation['isReserved'] && reservation['reservedBy'] == userId) {
         // Resume existing session
         return reservation['sessionId'] as String;
       }
-      
+
       // Reserve table and create new session
       return await reserveTable(validation.tableNumber!, userId);
     } else {
@@ -319,7 +337,7 @@ class FirebaseService {
     final sessionDoc = await dineInSessions.doc(sessionId).get();
     final sessionData = sessionDoc.data() as Map<String, dynamic>;
     final tableNumber = sessionData['tableNumber'] as String;
-    
+
     // Update session
     await dineInSessions.doc(sessionId).update({
       'status': 'completed',
@@ -327,20 +345,24 @@ class FirebaseService {
       'paymentMethod': paymentMethod,
       'paymentStatus': 'completed',
     });
-    
+
     // Release table reservation
     await releaseTableReservation(tableNumber);
   }
 
   // Save review for a dine-in session
-  static Future<void> saveReview(String sessionId, String name, [String? message]) async {
+  static Future<void> saveReview(
+    String sessionId,
+    String name, [
+    String? message,
+  ]) async {
     try {
       await dineInSessions.doc(sessionId).update({
         'review': {
           'name': name,
           'message': message ?? '',
           'submittedAt': FieldValue.serverTimestamp(),
-        }
+        },
       });
     } catch (e) {
       print('Error saving review: $e');
@@ -359,7 +381,7 @@ class FirebaseService {
       'status': 'pending',
       'addedAt': FieldValue.serverTimestamp(),
     };
-    
+
     if (sessionType == 'dine_in') {
       await dineInSessions.doc(sessionId).update({
         'items': FieldValue.arrayUnion([itemWithStatus]),
@@ -384,14 +406,12 @@ class FirebaseService {
     final sessionDoc = await collection.doc(sessionId).get();
     final sessionData = sessionDoc.data() as Map<String, dynamic>;
     final items = List<Map<String, dynamic>>.from(sessionData['items'] ?? []);
-    
+
     if (itemIndex < items.length) {
       items[itemIndex]['status'] = status;
       items[itemIndex]['statusUpdatedAt'] = FieldValue.serverTimestamp();
-      
-      await collection.doc(sessionId).update({
-        'items': items,
-      });
+
+      await collection.doc(sessionId).update({'items': items});
     }
   }
 
@@ -407,7 +427,7 @@ class FirebaseService {
       'addedAt': FieldValue.serverTimestamp(),
       'isReorder': true,
     };
-    
+
     await addItemToSession(sessionId, newItem, sessionType);
   }
 }

@@ -29,7 +29,7 @@ class CartItemModel {
   Map<String, dynamic> toJson() => _$CartItemModelToJson(this);
 
   double get totalPrice => menuItem.price * quantity;
-  
+
   // Convenience getters for cart drawer
   String get name => menuItem.name;
   double get price => menuItem.price;

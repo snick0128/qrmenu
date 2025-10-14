@@ -43,7 +43,7 @@ class BillingProvider extends ChangeNotifier {
       notifyListeners();
 
       await AdminService.completePayment(sessionId, sessionType, paymentMethod);
-      
+
       _isProcessingPayment = false;
       _currentBill = null; // Clear bill after successful payment
       notifyListeners();

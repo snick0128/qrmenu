@@ -27,7 +27,11 @@ class WebMenuGrid extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.restaurant_menu, size: 64, color: AppColors.textTertiary),
+            Icon(
+              Icons.restaurant_menu,
+              size: 64,
+              color: AppColors.textTertiary,
+            ),
             SizedBox(height: 16),
             Text(
               'No items found',
@@ -101,7 +105,9 @@ class WebMenuGrid extends StatelessWidget {
           children: [
             // Image container
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Container(
@@ -189,8 +195,14 @@ class WebMenuGrid extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.remove, color: Colors.white, size: 20),
-                                onPressed: onDecrement != null ? () => onDecrement!(item) : null,
+                                icon: const Icon(
+                                  Icons.remove,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                onPressed: onDecrement != null
+                                    ? () => onDecrement!(item)
+                                    : null,
                                 constraints: const BoxConstraints(
                                   minWidth: 32,
                                   minHeight: 32,
@@ -204,7 +216,11 @@ class WebMenuGrid extends StatelessWidget {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.add, color: Colors.white, size: 20),
+                                icon: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                                 onPressed: () => onAddToCart(item),
                                 constraints: const BoxConstraints(
                                   minWidth: 32,

@@ -46,16 +46,15 @@ class OrderHistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyHistory(BuildContext context, AppLanguageProvider languageProvider) {
+  Widget _buildEmptyHistory(
+    BuildContext context,
+    AppLanguageProvider languageProvider,
+  ) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.history,
-            size: 80,
-            color: AppColors.textTertiary,
-          ),
+          Icon(Icons.history, size: 80, color: AppColors.textTertiary),
           const SizedBox(height: 24),
           Text(
             languageProvider.getText('no_past_orders'),
@@ -66,9 +65,9 @@ class OrderHistoryScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             languageProvider.getText('no_past_orders_subtitle'),
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
             textAlign: TextAlign.center,
           ),
         ],
@@ -76,7 +75,11 @@ class OrderHistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, OrderModel order, AppLanguageProvider languageProvider) {
+  Widget _buildOrderCard(
+    BuildContext context,
+    OrderModel order,
+    AppLanguageProvider languageProvider,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -113,14 +116,18 @@ class OrderHistoryScreen extends StatelessWidget {
                         children: [
                           Text(
                             '${languageProvider.getText('order_id')}: #${order.id}',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'monospace',
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
                           ),
                           const Spacer(),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: _getStatusColor(order.status),
                               borderRadius: BorderRadius.circular(12),
@@ -162,34 +169,40 @@ class OrderHistoryScreen extends StatelessWidget {
             child: Column(
               children: [
                 // Items list
-                ...order.items.take(3).map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: item.menuItem.isVeg ? AppColors.veg : AppColors.nonVeg,
-                          borderRadius: BorderRadius.circular(1),
+                ...order.items
+                    .take(3)
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: item.menuItem.isVeg
+                                    ? AppColors.veg
+                                    : AppColors.nonVeg,
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                item.menuItem.name,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                            Text(
+                              'x${item.quantity}',
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          item.menuItem.name,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                      Text(
-                        'x${item.quantity}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                )).toList(),
+                    )
+                    .toList(),
 
                 // Show more indicator
                 if (order.items.length > 3)
@@ -214,32 +227,40 @@ class OrderHistoryScreen extends StatelessWidget {
                       children: [
                         Text(
                           '${order.items.length} ${languageProvider.getText('items_count')}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                         Text(
                           '₹${order.totalAmount.toStringAsFixed(0)}',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                         ),
                       ],
                     ),
                     const Spacer(),
                     OutlinedButton(
-                      onPressed: () => _showOrderDetails(context, order, languageProvider),
+                      onPressed: () =>
+                          _showOrderDetails(context, order, languageProvider),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                       ),
                       child: Text(languageProvider.getText('view_details')),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
-                      onPressed: () => _reorderItems(context, order, languageProvider),
+                      onPressed: () =>
+                          _reorderItems(context, order, languageProvider),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                       ),
                       child: Text(languageProvider.getText('reorder')),
                     ),
@@ -268,7 +289,10 @@ class OrderHistoryScreen extends StatelessWidget {
     }
   }
 
-  String _getStatusText(OrderStatus status, AppLanguageProvider languageProvider) {
+  String _getStatusText(
+    OrderStatus status,
+    AppLanguageProvider languageProvider,
+  ) {
     switch (status) {
       case OrderStatus.pending:
         return languageProvider.getText('pending');
@@ -298,16 +322,25 @@ class OrderHistoryScreen extends StatelessWidget {
     }
   }
 
-  void _showOrderDetails(BuildContext context, OrderModel order, AppLanguageProvider languageProvider) {
+  void _showOrderDetails(
+    BuildContext context,
+    OrderModel order,
+    AppLanguageProvider languageProvider,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _OrderDetailsSheet(order: order, languageProvider: languageProvider),
+      builder: (context) =>
+          _OrderDetailsSheet(order: order, languageProvider: languageProvider),
     );
   }
 
-  void _reorderItems(BuildContext context, OrderModel order, AppLanguageProvider languageProvider) {
+  void _reorderItems(
+    BuildContext context,
+    OrderModel order,
+    AppLanguageProvider languageProvider,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -323,7 +356,7 @@ class OrderHistoryScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               final cartProvider = context.read<CartProvider>();
-              
+
               // Add all items from the order to cart
               for (final item in order.items) {
                 cartProvider.addItem(
@@ -332,12 +365,14 @@ class OrderHistoryScreen extends StatelessWidget {
                   specialInstructions: item.specialInstructions,
                 );
               }
-              
+
               Navigator.of(context).pop();
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(languageProvider.getText('items_added_to_cart')),
+                  content: Text(
+                    languageProvider.getText('items_added_to_cart'),
+                  ),
                   backgroundColor: AppColors.success,
                   action: SnackBarAction(
                     label: languageProvider.getText('view_cart'),
@@ -402,21 +437,22 @@ class _OrderDetailsSheet extends StatelessWidget {
                         children: [
                           Text(
                             'Order #${order.id}',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           Text(
                             order.restaurantName,
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(color: AppColors.textSecondary),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: _getStatusColor(order.status),
                         borderRadius: BorderRadius.circular(16),
@@ -448,70 +484,93 @@ class _OrderDetailsSheet extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      
-                      ...order.items.map((item) => Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
+
+                      ...order.items
+                          .map(
+                            (item) => Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: item.menuItem.isVeg ? AppColors.veg : AppColors.nonVeg,
-                                borderRadius: BorderRadius.circular(2),
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
                                 children: [
-                                  Text(
-                                    item.menuItem.name,
-                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                      fontWeight: FontWeight.w600,
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: item.menuItem.isVeg
+                                          ? AppColors.veg
+                                          : AppColors.nonVeg,
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
-                                  if (item.specialInstructions != null && item.specialInstructions!.isNotEmpty)
-                                    Text(
-                                      item.specialInstructions!,
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: AppColors.textSecondary,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.menuItem.name,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                        if (item.specialInstructions != null &&
+                                            item
+                                                .specialInstructions!
+                                                .isNotEmpty)
+                                          Text(
+                                            item.specialInstructions!,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  fontStyle: FontStyle.italic,
+                                                ),
+                                          ),
+                                      ],
                                     ),
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'x${item.quantity}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                      Text(
+                                        '₹${item.totalPrice.toStringAsFixed(0)}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'x${item.quantity}',
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  '₹${item.totalPrice.toStringAsFixed(0)}',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )).toList(),
+                          )
+                          .toList(),
 
                       const SizedBox(height: 24),
-                      
+
                       // Order total
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -524,16 +583,16 @@ class _OrderDetailsSheet extends StatelessWidget {
                           children: [
                             Text(
                               'Total Amount',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               '₹${order.totalAmount.toStringAsFixed(0)}',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
                             ),
                           ],
                         ),

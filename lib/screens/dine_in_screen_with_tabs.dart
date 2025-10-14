@@ -9,7 +9,6 @@ import '../services/firebase_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/cart_drawer.dart';
 import '../widgets/menu_item_card.dart';
-import '../widgets/item_status_badge.dart';
 import '../screens/your_order_screen.dart';
 import 'checkout_screen.dart';
 
@@ -26,9 +25,8 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
   late Animation<double> _fadeAnimation;
   String? _sessionId;
   String? _tableNumber;
-  String? _code;
   StreamSubscription<DocumentSnapshot>? _sessionListener;
-  
+
   int _currentIndex = 0;
   final PageController _pageController = PageController();
 
@@ -46,50 +44,85 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
     _initializeSession();
   }
 
-  void _initializeSession() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+  Future<void> _initializeSession() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null) {
-        _sessionId = args['sessionId'];
-        _tableNumber = args['tableNumber'];
-        _code = args['code'];
-        
-        // Initialize cart provider with dine-in session
-        context.read<CartProvider>().initializeSession(
-          _sessionId!,
-          'dine_in',
-          tableNumber: _tableNumber,
-        );
-        
-        // Load existing cart from Firebase
-        context.read<CartProvider>().loadFromFirebase(_sessionId!, 'dine_in');
-        
-        // Initialize menu data
-        context.read<MenuProvider>().initializeWithFirebaseData();
-        
-        // Set up real-time listener for session updates
-        _setupSessionListener();
+        final sessionId = args['sessionId'] as String?;
+        final tableNumber = args['tableNumber'] as String?;
+
+        if (mounted) {
+          setState(() {
+            _sessionId = sessionId;
+            _tableNumber = tableNumber;
+          });
+        }
+
+        if (sessionId != null) {
+          // Initialize cart provider with dine-in session
+          context.read<CartProvider>().initializeSession(
+            sessionId,
+            'dine_in',
+            tableNumber: tableNumber,
+          );
+
+          // Load existing cart from Firebase
+          context.read<CartProvider>().loadFromFirebase(sessionId, 'dine_in');
+
+          // Get restaurant ID from table number and initialize menu
+          if (tableNumber != null) {
+            final tableDoc = await FirebaseService.accessCodes
+                .doc(tableNumber)
+                .get();
+            if (tableDoc.exists) {
+              final data = tableDoc.data() as Map<String, dynamic>;
+              final hotelId = data['restaurantId'] as String?;
+              if (hotelId != null) {
+                // Initialize menu data with restaurant ID
+                await context.read<MenuProvider>().initializeWithFirebaseData(
+                  hotelId,
+                );
+
+                // Set up real-time listener for session updates
+                _setupSessionListener(hotelId);
+                return;
+              }
+            }
+          }
+
+          // Fallback to default restaurant if no hotel ID found
+          await context.read<MenuProvider>().initializeWithMockData();
+          _setupSessionListener(null);
+        }
       }
     });
   }
 
-  void _setupSessionListener() {
+  void _setupSessionListener(String? hotelId) {
     if (_sessionId != null) {
-      _sessionListener = FirebaseService.dineInSessions
-          .doc(_sessionId)
-          .snapshots()
-          .listen((snapshot) {
+      CollectionReference sessionsCollection;
+
+      if (hotelId != null) {
+        // Use restaurant's dine sessions collection
+        sessionsCollection = FirebaseService.restaurants
+            .doc(hotelId)
+            .collection('dineSessions');
+      } else {
+        // Fallback to old collection
+        sessionsCollection = FirebaseService.dineInSessions;
+      }
+
+      _sessionListener = sessionsCollection.doc(_sessionId).snapshots().listen((
+        snapshot,
+      ) {
         if (mounted && snapshot.exists) {
           final data = snapshot.data() as Map<String, dynamic>;
           final status = data['status'] as String?;
-          
+
           if (status == 'completed') {
             // Session completed, redirect to entry screen
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/',
-              (route) => false,
-            );
+            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
           }
         }
       });
@@ -107,7 +140,7 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
   void _addToCart(MenuItemModel item) {
     final cartProvider = context.read<CartProvider>();
     cartProvider.addItem(item);
-    
+
     // Show feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -119,13 +152,15 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
       ),
     );
   }
-  
+
   void _incrementItem(MenuItemModel item) {
     final cartProvider = context.read<CartProvider>();
     final itemIndex = cartProvider.items.indexWhere(
-      (cartItem) => cartItem.menuItem.id == item.id && cartItem.status == ItemStatus.pending,
+      (cartItem) =>
+          cartItem.menuItem.id == item.id &&
+          cartItem.status == ItemStatus.pending,
     );
-    
+
     if (itemIndex >= 0) {
       cartProvider.increaseItemQuantity(itemIndex);
     } else {
@@ -133,13 +168,15 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
       cartProvider.addItem(item);
     }
   }
-  
+
   void _decrementItem(MenuItemModel item) {
     final cartProvider = context.read<CartProvider>();
     final itemIndex = cartProvider.items.indexWhere(
-      (cartItem) => cartItem.menuItem.id == item.id && cartItem.status == ItemStatus.pending,
+      (cartItem) =>
+          cartItem.menuItem.id == item.id &&
+          cartItem.status == ItemStatus.pending,
     );
-    
+
     if (itemIndex >= 0) {
       cartProvider.decreaseItemQuantity(itemIndex);
     }
@@ -173,16 +210,10 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(
-              Icons.support_agent,
-              color: AppColors.primary,
-              size: 28,
-            ),
+            Icon(Icons.support_agent, color: AppColors.primary, size: 28),
             const SizedBox(width: 12),
             Text(
               'Call Waiter',
@@ -250,13 +281,17 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Waiter has been notified! They will be with you shortly.'),
+            content: const Text(
+              'Waiter has been notified! They will be with you shortly.',
+            ),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             action: SnackBarAction(
               label: 'OK',
-              textColor: Colors.white,
+              textColor: AppColors.textPrimaryDark,
               onPressed: () {},
             ),
           ),
@@ -280,11 +315,7 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
                 color: AppColors.primary.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                icon,
-                color: AppColors.primary,
-                size: 20,
-              ),
+              child: Icon(icon, color: AppColors.primary, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -302,7 +333,7 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: AppColors.textTertiaryDark,
+                      color: AppColors.textSecondaryDark,
                       fontSize: 12,
                     ),
                   ),
@@ -344,10 +375,7 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
             _buildMenuTab(),
             // Your Order Tab
             if (_sessionId != null)
-              YourOrderScreen(
-                sessionId: _sessionId!,
-                tableNumber: _tableNumber,
-              )
+              YourOrderScreen(sessionId: _sessionId!, tableNumber: _tableNumber)
             else
               const Center(child: CircularProgressIndicator()),
             // Call Waiter Tab (placeholder - action happens in bottom nav)
@@ -355,19 +383,19 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
           ],
         ),
       ),
-      
+
       // Floating Cart Button (only on menu tab)
-      floatingActionButton: _currentIndex == 0 
+      floatingActionButton: _currentIndex == 0
           ? Consumer<CartProvider>(
               builder: (context, cartProvider, child) {
                 if (cartProvider.itemCount == 0) return const SizedBox.shrink();
-                
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 80),
                   child: FloatingActionButton.extended(
                     onPressed: _openCartDrawer,
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.black,
+                    foregroundColor: AppColors.textPrimaryDark,
                     elevation: 8,
                     icon: Stack(
                       children: [
@@ -387,8 +415,8 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
                             ),
                             child: Text(
                               '${cartProvider.itemCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: AppColors.textPrimaryDark,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -418,7 +446,7 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
           color: AppColors.surfaceDark,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: AppColors.cardShadowDark,
               blurRadius: 20,
               offset: const Offset(0, -10),
             ),
@@ -436,9 +464,11 @@ class _DineInScreenWithTabsState extends State<DineInScreenWithTabs>
                   index: 0,
                   isSelected: _currentIndex == 0,
                 ),
-Consumer<CartProvider>(
+                Consumer<CartProvider>(
                   builder: (context, cartProvider, _) {
-                    final totalItems = cartProvider.sessionItems.length + cartProvider.itemCount;
+                    final totalItems =
+                        cartProvider.sessionItems.length +
+                        cartProvider.itemCount;
                     return _buildBottomNavItem(
                       icon: Icons.receipt_long,
                       label: 'Your Order',
@@ -468,7 +498,7 @@ Consumer<CartProvider>(
     required String label,
     required int index,
     required bool isSelected,
-    dynamic badge,
+    int? badge,
     VoidCallback? onTap,
   }) {
     return GestureDetector(
@@ -477,7 +507,7 @@ Consumer<CartProvider>(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? AppColors.primary.withOpacity(0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
@@ -489,7 +519,9 @@ Consumer<CartProvider>(
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? AppColors.primary : AppColors.textSecondaryDark,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondaryDark,
                   size: 24,
                 ),
                 if (badge != null)
@@ -500,7 +532,7 @@ Consumer<CartProvider>(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
                         color: AppColors.error,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       constraints: const BoxConstraints(
                         minWidth: 16,
@@ -508,8 +540,8 @@ Consumer<CartProvider>(
                       ),
                       child: Text(
                         '$badge',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: AppColors.textPrimaryDark,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -523,7 +555,9 @@ Consumer<CartProvider>(
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.textSecondaryDark,
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.textSecondaryDark,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
@@ -549,8 +583,8 @@ Consumer<CartProvider>(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.primary.withOpacity(0.8),
-                        AppColors.secondary.withOpacity(0.6),
+                        AppColors.secondary.withOpacity(0.8),
+                        AppColors.primary.withOpacity(0.6),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -566,8 +600,8 @@ Consumer<CartProvider>(
                           Row(
                             children: [
                               Icon(
-                                Icons.restaurant_menu,
-                                color: Colors.white,
+                                Icons.restaurant_menu_rounded,
+                                color: AppColors.textPrimaryDark,
                                 size: 32,
                               ),
                               const SizedBox(width: 12),
@@ -576,9 +610,9 @@ Consumer<CartProvider>(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Dine-In Experience',
+                                      'Dine-in Menu',
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: AppColors.textPrimaryDark,
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -587,7 +621,7 @@ Consumer<CartProvider>(
                                       Text(
                                         'Table $_tableNumber',
                                         style: TextStyle(
-                                          color: Colors.white70,
+                                          color: AppColors.textSecondaryDark,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -604,16 +638,16 @@ Consumer<CartProvider>(
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: AppColors.glassDark,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
+                                color: AppColors.glassDark.withOpacity(0.75),
                               ),
                             ),
                             child: Text(
                               'Real-time ordering • Live updates',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.textPrimaryDark,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -626,7 +660,7 @@ Consumer<CartProvider>(
                 ),
               ),
             ),
-            
+
             // Menu Categories & Search
             SliverToBoxAdapter(
               child: Padding(
@@ -640,7 +674,7 @@ Consumer<CartProvider>(
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: AppColors.cardShadowDark,
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -668,9 +702,9 @@ Consumer<CartProvider>(
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Category Tabs
                     if (menuProvider.categories.isNotEmpty)
                       SizedBox(
@@ -680,8 +714,9 @@ Consumer<CartProvider>(
                           itemCount: menuProvider.categories.length,
                           itemBuilder: (context, index) {
                             final category = menuProvider.categories[index];
-                            final isSelected = category == menuProvider.selectedCategory;
-                            
+                            final isSelected =
+                                category == menuProvider.selectedCategory;
+
                             return Padding(
                               padding: const EdgeInsets.only(right: 12),
                               child: FilterChip(
@@ -693,11 +728,13 @@ Consumer<CartProvider>(
                                   );
                                 },
                                 backgroundColor: AppColors.surfaceDark,
-                                selectedColor: AppColors.primary.withOpacity(0.2),
-                                checkmarkColor: AppColors.primary,
+                                selectedColor: AppColors.secondary.withOpacity(
+                                  0.2,
+                                ),
+                                checkmarkColor: AppColors.secondary,
                                 labelStyle: TextStyle(
                                   color: isSelected
-                                      ? AppColors.primary
+                                      ? AppColors.secondary
                                       : AppColors.textSecondaryDark,
                                   fontWeight: isSelected
                                       ? FontWeight.w600
@@ -705,7 +742,7 @@ Consumer<CartProvider>(
                                 ),
                                 side: BorderSide(
                                   color: isSelected
-                                      ? AppColors.primary
+                                      ? AppColors.secondary
                                       : AppColors.surfaceVariantDark,
                                 ),
                               ),
@@ -717,40 +754,43 @@ Consumer<CartProvider>(
                 ),
               ),
             ),
-            
+
             // Menu Items Grid
             if (menuProvider.filteredMenuItems.isNotEmpty)
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : 3,
+                    crossAxisCount: MediaQuery.of(context).size.width < 600
+                        ? 2
+                        : MediaQuery.of(context).size.width < 900
+                        ? 3
+                        : 4,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    childAspectRatio: MediaQuery.of(context).size.width < 600 ? 0.75 : 0.8,
+                    childAspectRatio: MediaQuery.of(context).size.width < 600
+                        ? 0.75
+                        : 0.8,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = menuProvider.filteredMenuItems[index];
-                      return Consumer<CartProvider>(
-                        builder: (context, cartProvider, _) {
-                          final quantity = cartProvider.getItemQuantity(item.id);
-                          return MenuItemCard(
-                            item: item,
-                            onAddToCart: () => _addToCart(item),
-                            sessionType: 'dine_in',
-                            quantity: quantity,
-                            onIncrement: () => _incrementItem(item),
-                            onDecrement: () => _decrementItem(item),
-                          );
-                        },
-                      );
-                    },
-                    childCount: menuProvider.filteredMenuItems.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = menuProvider.filteredMenuItems[index];
+                    return Consumer<CartProvider>(
+                      builder: (context, cartProvider, _) {
+                        final quantity = cartProvider.getItemQuantity(item.id);
+                        return MenuItemCard(
+                          item: item,
+                          onAddToCart: () => _addToCart(item),
+                          sessionType: 'dine_in',
+                          quantity: quantity,
+                          onIncrement: () => _incrementItem(item),
+                          onDecrement: () => _decrementItem(item),
+                        );
+                      },
+                    );
+                  }, childCount: menuProvider.filteredMenuItems.length),
                 ),
               ),
-            
+
             // Loading or Empty State
             if (menuProvider.isLoading)
               SliverFillRemaining(
@@ -771,8 +811,9 @@ Consumer<CartProvider>(
                   ),
                 ),
               ),
-            
-            if (!menuProvider.isLoading && menuProvider.filteredMenuItems.isEmpty)
+
+            if (!menuProvider.isLoading &&
+                menuProvider.filteredMenuItems.isEmpty)
               SliverFillRemaining(
                 child: Center(
                   child: Column(
@@ -795,11 +836,9 @@ Consumer<CartProvider>(
                   ),
                 ),
               ),
-            
+
             // Bottom spacing for navigation
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 120),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 120)),
           ],
         );
       },

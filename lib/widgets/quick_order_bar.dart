@@ -25,17 +25,13 @@ class QuickOrderBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                Icon(
-                  Icons.flash_on,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
+                Icon(Icons.flash_on, color: AppColors.primary, size: 18),
                 const SizedBox(width: 8),
                 Text(
                   'Quick Order',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const Spacer(),
                 if (onToggle != null)
@@ -95,7 +91,9 @@ class _QuickChip extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: item.isVeg ? AppColors.veg.withOpacity(0.15) : AppColors.nonVeg.withOpacity(0.15),
+                  color: item.isVeg
+                      ? AppColors.veg.withOpacity(0.15)
+                      : AppColors.nonVeg.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -113,8 +111,8 @@ class _QuickChip extends StatelessWidget {
                     Text(
                       item.name,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -123,7 +121,8 @@ class _QuickChip extends StatelessWidget {
                       children: [
                         Text(
                           '₹${item.price.toStringAsFixed(0)}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -136,7 +135,11 @@ class _QuickChip extends StatelessWidget {
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.add, size: 12, color: Colors.white),
+                          child: const Icon(
+                            Icons.add,
+                            size: 12,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),

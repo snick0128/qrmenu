@@ -10,6 +10,7 @@ import '../screens/feedback_screen.dart';
 import '../screens/menu_screen.dart';
 
 enum OrderStatus { pending, preparing, ready, served }
+
 enum OrderType { dineIn, takeaway, delivery } // Temporary enum for compilation
 
 class OrderTrackingScreen extends StatefulWidget {

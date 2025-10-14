@@ -68,75 +68,63 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Settings sections
-            _buildSettingsSection(
-              context,
-              'Preferences',
-              [
-                _buildSettingsTile(
-                  context,
-                  Icons.language,
-                  'Language',
-                  languageProvider.languageName,
-                  () => _showLanguageDialog(context, languageProvider),
-                ),
-                _buildSettingsTile(
-                  context,
-                  Icons.palette,
-                  'Theme',
-                  'System',
-                  () => _showThemeDialog(context),
-                ),
-              ],
-            ),
+            _buildSettingsSection(context, 'Preferences', [
+              _buildSettingsTile(
+                context,
+                Icons.language,
+                'Language',
+                languageProvider.languageName,
+                () => _showLanguageDialog(context, languageProvider),
+              ),
+              _buildSettingsTile(
+                context,
+                Icons.palette,
+                'Theme',
+                'System',
+                () => _showThemeDialog(context),
+              ),
+            ]),
 
             const SizedBox(height: 16),
 
-            _buildSettingsSection(
-              context,
-              'Data',
-              [
-                _buildSettingsTile(
-                  context,
-                  Icons.delete_sweep,
-                  'Clear Order History',
-                  'Remove all saved orders',
-                  () => _showClearHistoryDialog(context),
-                  isDestructive: true,
-                ),
-              ],
-            ),
+            _buildSettingsSection(context, 'Data', [
+              _buildSettingsTile(
+                context,
+                Icons.delete_sweep,
+                'Clear Order History',
+                'Remove all saved orders',
+                () => _showClearHistoryDialog(context),
+                isDestructive: true,
+              ),
+            ]),
 
             const SizedBox(height: 16),
 
-            _buildSettingsSection(
-              context,
-              'About',
-              [
-                _buildSettingsTile(
-                  context,
-                  Icons.info,
-                  'App Version',
-                  '1.0.0',
-                  null,
-                ),
-                _buildSettingsTile(
-                  context,
-                  Icons.bug_report,
-                  'Debug Mode',
-                  'Development build',
-                  null,
-                ),
-              ],
-            ),
+            _buildSettingsSection(context, 'About', [
+              _buildSettingsTile(
+                context,
+                Icons.info,
+                'App Version',
+                '1.0.0',
+                null,
+              ),
+              _buildSettingsTile(
+                context,
+                Icons.bug_report,
+                'Debug Mode',
+                'Development build',
+                null,
+              ),
+            ]),
 
             const SizedBox(height: 32),
 
             // Footer
             Text(
               'Made with ❤️ for great dining experiences',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textTertiary,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textTertiary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -145,7 +133,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context, String title, List<Widget> tiles) {
+  Widget _buildSettingsSection(
+    BuildContext context,
+    String title,
+    List<Widget> tiles,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -198,7 +190,8 @@ class ProfileScreen extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: (isDestructive ? AppColors.error : AppColors.primary).withOpacity(0.1),
+                  color: (isDestructive ? AppColors.error : AppColors.primary)
+                      .withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -229,10 +222,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               if (onTap != null)
-                Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textTertiary,
-                ),
+                Icon(Icons.chevron_right, color: AppColors.textTertiary),
             ],
           ),
         ),
@@ -240,7 +230,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLanguageDialog(BuildContext context, AppLanguageProvider languageProvider) {
+  void _showLanguageDialog(
+    BuildContext context,
+    AppLanguageProvider languageProvider,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -248,9 +241,27 @@ class ProfileScreen extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildLanguageOption(context, languageProvider, 'en', 'English', '🇺🇸'),
-            _buildLanguageOption(context, languageProvider, 'hi', 'Hindi', '🇮🇳'),
-            _buildLanguageOption(context, languageProvider, 'mr', 'Marathi', '🇮🇳'),
+            _buildLanguageOption(
+              context,
+              languageProvider,
+              'en',
+              'English',
+              '🇺🇸',
+            ),
+            _buildLanguageOption(
+              context,
+              languageProvider,
+              'hi',
+              'Hindi',
+              '🇮🇳',
+            ),
+            _buildLanguageOption(
+              context,
+              languageProvider,
+              'mr',
+              'Marathi',
+              '🇮🇳',
+            ),
           ],
         ),
       ),
@@ -265,7 +276,7 @@ class ProfileScreen extends StatelessWidget {
     String flag,
   ) {
     final isSelected = languageProvider.languageCode == code;
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -281,8 +292,7 @@ class ProfileScreen extends StatelessWidget {
               Text(flag, style: const TextStyle(fontSize: 20)),
               const SizedBox(width: 12),
               Expanded(child: Text(name)),
-              if (isSelected)
-                Icon(Icons.check, color: AppColors.primary),
+              if (isSelected) Icon(Icons.check, color: AppColors.primary),
             ],
           ),
         ),
@@ -295,7 +305,9 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Theme'),
-        content: const Text('Theme selection will be available in a future update.'),
+        content: const Text(
+          'Theme selection will be available in a future update.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -311,7 +323,9 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear Order History'),
-        content: const Text('Are you sure you want to delete all your order history? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete all your order history? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -328,9 +342,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Clear'),
           ),
         ],

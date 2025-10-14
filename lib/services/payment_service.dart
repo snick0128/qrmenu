@@ -1,18 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/firebase_service.dart';
 
-enum PaymentMethod {
-  online,
-  counter,
-}
+enum PaymentMethod { online, counter }
 
-enum PaymentStatus {
-  pending,
-  processing,
-  completed,
-  failed,
-  cancelled,
-}
+enum PaymentStatus { pending, processing, completed, failed, cancelled }
 
 class PaymentService {
   static final PaymentService _instance = PaymentService._internal();
@@ -138,17 +129,14 @@ class PaymentService {
           .collection('payments')
           .doc(orderId)
           .update({
-        'status': PaymentStatus.cancelled.toString(),
-        'cancelledAt': FieldValue.serverTimestamp(),
-      });
+            'status': PaymentStatus.cancelled.toString(),
+            'cancelledAt': FieldValue.serverTimestamp(),
+          });
 
       // Update order status
       await FirebaseService.updateOrderStatus(orderId, 'cancelled');
 
-      return {
-        'success': true,
-        'message': 'Payment cancelled successfully',
-      };
+      return {'success': true, 'message': 'Payment cancelled successfully'};
     } catch (e) {
       return {
         'success': false,

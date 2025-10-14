@@ -40,13 +40,9 @@ class _MenuItemCardState extends State<MenuItemCard>
       vsync: this,
       duration: const Duration(milliseconds: 150),
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.96,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -127,8 +123,10 @@ class _MenuItemCardState extends State<MenuItemCard>
                                 ? CachedNetworkImage(
                                     imageUrl: widget.item.imageUrl,
                                     fit: BoxFit.cover,
-                                    placeholder: (context, url) => _buildImagePlaceholder(),
-                                    errorWidget: (context, url, error) => _buildImagePlaceholder(),
+                                    placeholder: (context, url) =>
+                                        _buildImagePlaceholder(),
+                                    errorWidget: (context, url, error) =>
+                                        _buildImagePlaceholder(),
                                   )
                                 : _buildImagePlaceholder(),
                           ),
@@ -173,7 +171,9 @@ class _MenuItemCardState extends State<MenuItemCard>
                                   ),
                                   child: Icon(
                                     Icons.circle,
-                                    color: widget.item.isVeg ? AppColors.veg : AppColors.nonVeg,
+                                    color: widget.item.isVeg
+                                        ? AppColors.veg
+                                        : AppColors.nonVeg,
                                     size: 6,
                                   ),
                                 ),
@@ -181,7 +181,10 @@ class _MenuItemCardState extends State<MenuItemCard>
                                 // Popular badge
                                 if (widget.item.isPopular)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                      vertical: 1,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: AppColors.primary,
                                       borderRadius: BorderRadius.circular(6),
@@ -225,7 +228,9 @@ class _MenuItemCardState extends State<MenuItemCard>
                     Expanded(
                       flex: 4,
                       child: Padding(
-                        padding: EdgeInsets.all(isDesktop ? 12 : (isTablet ? 10 : 8)),
+                        padding: EdgeInsets.all(
+                          isDesktop ? 12 : (isTablet ? 10 : 8),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -240,7 +245,9 @@ class _MenuItemCardState extends State<MenuItemCard>
                                     widget.item.name,
                                     style: TextStyle(
                                       color: AppColors.textPrimaryDark,
-                                      fontSize: isDesktop ? 14 : (isTablet ? 13 : 12),
+                                      fontSize: isDesktop
+                                          ? 14
+                                          : (isTablet ? 13 : 12),
                                       fontWeight: FontWeight.bold,
                                       height: 1.1,
                                     ),
@@ -252,7 +259,9 @@ class _MenuItemCardState extends State<MenuItemCard>
                                     '₹${widget.item.price.toStringAsFixed(0)}',
                                     style: TextStyle(
                                       color: AppColors.primary,
-                                      fontSize: isDesktop ? 16 : (isTablet ? 14 : 13),
+                                      fontSize: isDesktop
+                                          ? 16
+                                          : (isTablet ? 14 : 13),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -264,7 +273,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                             SizedBox(height: isDesktop ? 6 : 4),
                             SizedBox(
                               height: isDesktop ? 32 : (isTablet ? 28 : 24),
-                              child: widget.quantity > 0 
+                              child: widget.quantity > 0
                                   ? _buildQuantityControls(isDesktop, isTablet)
                                   : _buildAddButton(isDesktop, isTablet),
                             ),
@@ -295,20 +304,21 @@ class _MenuItemCardState extends State<MenuItemCard>
         ),
       ),
       child: const Center(
-        child: Icon(
-          Icons.restaurant_menu,
-          color: AppColors.primary,
-          size: 32,
-        ),
+        child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 32),
       ),
     );
   }
 
-  Widget _buildQuantityControls([bool isDesktop = false, bool isTablet = false]) {
+  Widget _buildQuantityControls([
+    bool isDesktop = false,
+    bool isTablet = false,
+  ]) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.circular(isDesktop ? 16 : (isTablet ? 14 : 12)),
+        borderRadius: BorderRadius.circular(
+          isDesktop ? 16 : (isTablet ? 14 : 12),
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.3),
@@ -372,8 +382,12 @@ class _MenuItemCardState extends State<MenuItemCard>
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: widget.isLocked ? AppColors.textTertiaryDark : AppColors.primary,
-          borderRadius: BorderRadius.circular(isDesktop ? 16 : (isTablet ? 14 : 12)),
+          color: widget.isLocked
+              ? AppColors.textTertiaryDark
+              : AppColors.primary,
+          borderRadius: BorderRadius.circular(
+            isDesktop ? 16 : (isTablet ? 14 : 12),
+          ),
           boxShadow: widget.isLocked
               ? null
               : [
@@ -391,14 +405,18 @@ class _MenuItemCardState extends State<MenuItemCard>
             children: [
               Icon(
                 widget.isLocked ? Icons.lock : Icons.add,
-                color: widget.isLocked ? AppColors.textSecondaryDark : Colors.black,
+                color: widget.isLocked
+                    ? AppColors.textSecondaryDark
+                    : Colors.black,
                 size: isDesktop ? 14 : (isTablet ? 12 : 10),
               ),
               SizedBox(width: isDesktop ? 6 : 4),
               Text(
                 widget.isLocked ? 'Locked' : 'Add',
                 style: TextStyle(
-                  color: widget.isLocked ? AppColors.textSecondaryDark : Colors.black,
+                  color: widget.isLocked
+                      ? AppColors.textSecondaryDark
+                      : Colors.black,
                   fontSize: isDesktop ? 11 : (isTablet ? 10 : 9),
                   fontWeight: FontWeight.bold,
                 ),

@@ -26,13 +26,13 @@ class ResponsiveMenuGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
-        
+
         // Calculate responsive grid parameters
         int crossAxisCount;
         double childAspectRatio;
         double mainAxisSpacing;
         double crossAxisSpacing;
-        
+
         if (screenWidth < 600) {
           // Mobile - 2 columns
           crossAxisCount = 2;
@@ -71,7 +71,7 @@ class ResponsiveMenuGrid extends StatelessWidget {
           itemBuilder: (context, index) {
             final item = items[index];
             final quantity = getItemQuantity(item.id);
-            
+
             return MenuItemCard(
               item: item,
               quantity: quantity,
@@ -111,12 +111,12 @@ class ResponsiveMenuMasonryGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
-        
+
         // Calculate cross axis count based on screen width
         int crossAxisCount;
         double mainAxisSpacing;
         double crossAxisSpacing;
-        
+
         if (screenWidth < 600) {
           // Mobile - 2 columns
           crossAxisCount = 2;
@@ -148,7 +148,7 @@ class ResponsiveMenuMasonryGrid extends StatelessWidget {
           itemBuilder: (context, index) {
             final item = items[index];
             final quantity = getItemQuantity(item.id);
-            
+
             return MenuItemCard(
               item: item,
               quantity: quantity,

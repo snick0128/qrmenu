@@ -1,8 +1,8 @@
 /// Firebase Setup Script for URL-based Routing
-/// 
+///
 /// This script helps you set up the required Firebase Firestore data
 /// for testing the new URL-based routing implementation.
-/// 
+///
 /// Usage:
 /// 1. Run: dart FIREBASE_SETUP_SCRIPT.dart
 /// 2. Or integrate into your existing seed script
@@ -23,11 +23,7 @@ Future<void> setupRestaurantData() async {
     'phone': '+1234567890',
     'logoUrl': 'https://via.placeholder.com/150',
     'isActive': true,
-    'settings': {
-      'currency': 'INR',
-      'taxRate': 5.0,
-      'serviceCharge': 10.0,
-    },
+    'settings': {'currency': 'INR', 'taxRate': 5.0, 'serviceCharge': 10.0},
     'createdAt': FieldValue.serverTimestamp(),
   });
 
@@ -41,11 +37,7 @@ Future<void> setupRestaurantData() async {
     'phone': '+0987654321',
     'logoUrl': 'https://via.placeholder.com/150',
     'isActive': true,
-    'settings': {
-      'currency': 'INR',
-      'taxRate': 5.0,
-      'serviceCharge': 5.0,
-    },
+    'settings': {'currency': 'INR', 'taxRate': 5.0, 'serviceCharge': 5.0},
     'createdAt': FieldValue.serverTimestamp(),
   });
 
@@ -73,13 +65,7 @@ Future<void> setupAccessCodes() async {
   print('\n🎫 Setting up access codes...');
 
   // Dine-in table codes for demo_restaurant
-  final dineInTables = [
-    'TBL_1',
-    'TBL_2',
-    'TBL_3',
-    'TBL_4',
-    'TBL_5',
-  ];
+  final dineInTables = ['TBL_1', 'TBL_2', 'TBL_3', 'TBL_4', 'TBL_5'];
 
   for (int i = 0; i < dineInTables.length; i++) {
     final tableCode = dineInTables[i];
@@ -94,15 +80,13 @@ Future<void> setupAccessCodes() async {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    print('✅ Created ${isActive ? "active" : "inactive"} table code: $tableCode');
+    print(
+      '✅ Created ${isActive ? "active" : "inactive"} table code: $tableCode',
+    );
   }
 
   // Parcel codes
-  final parcelCodes = [
-    'PARCEL_01',
-    'PARCEL_02',
-    'PARCEL_03',
-  ];
+  final parcelCodes = ['PARCEL_01', 'PARCEL_02', 'PARCEL_03'];
 
   for (final parcelCode in parcelCodes) {
     await firestore.collection('accessCodes').doc(parcelCode).set({
@@ -187,13 +171,28 @@ Future<void> setupMenuItems() async {
     },
   ];
 
+  // Add menu items to demo_restaurant
   for (final item in menuItems) {
-    await firestore.collection('menuItems').doc(item['id'] as String).set({
-      ...item,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    await firestore
+        .collection('restaurants')
+        .doc('demo_restaurant')
+        .collection('menu')
+        .doc(item['id'] as String)
+        .set({...item, 'createdAt': FieldValue.serverTimestamp()});
 
-    print('✅ Created menu item: ${item['name']}');
+    print('✅ Created menu item for demo_restaurant: ${item['name']}');
+  }
+
+  // Also add menu items to test_cafe
+  for (final item in menuItems) {
+    await firestore
+        .collection('restaurants')
+        .doc('test_cafe')
+        .collection('menu')
+        .doc(item['id'] as String)
+        .set({...item, 'createdAt': FieldValue.serverTimestamp()});
+
+    print('✅ Created menu item for test_cafe: ${item['name']}');
   }
 }
 
@@ -235,12 +234,27 @@ Future<void> validateFirebaseData() async {
   final accessCodesSnapshot = await firestore.collection('accessCodes').get();
   print('📊 Access codes count: ${accessCodesSnapshot.docs.length}');
 
-  // Check menu items
-  final menuItemsSnapshot = await firestore.collection('menuItems').get();
-  print('📊 Menu items count: ${menuItemsSnapshot.docs.length}');
+  // Check menu items for demo_restaurant
+  final demoMenuSnapshot = await firestore
+      .collection('restaurants')
+      .doc('demo_restaurant')
+      .collection('menu')
+      .get();
+  print('📊 Demo Restaurant menu items count: ${demoMenuSnapshot.docs.length}');
+
+  // Check menu items for test_cafe
+  final cafeMenuSnapshot = await firestore
+      .collection('restaurants')
+      .doc('test_cafe')
+      .collection('menu')
+      .get();
+  print('📊 Test Cafe menu items count: ${cafeMenuSnapshot.docs.length}');
 
   // Validate specific documents
-  final demoRestaurant = await firestore.collection('restaurants').doc('demo_restaurant').get();
+  final demoRestaurant = await firestore
+      .collection('restaurants')
+      .doc('demo_restaurant')
+      .get();
   if (demoRestaurant.exists) {
     final data = demoRestaurant.data()!;
     print('\n✅ Demo Restaurant:');
@@ -275,8 +289,14 @@ Future<void> cleanupFirebaseData() async {
 
   // Delete access codes
   final accessCodes = [
-    'TBL_1', 'TBL_2', 'TBL_3', 'TBL_4', 'TBL_5',
-    'PARCEL_01', 'PARCEL_02', 'PARCEL_03',
+    'TBL_1',
+    'TBL_2',
+    'TBL_3',
+    'TBL_4',
+    'TBL_5',
+    'PARCEL_01',
+    'PARCEL_02',
+    'PARCEL_03',
     'CAFE_TBL_1',
   ];
   for (final code in accessCodes) {
@@ -284,11 +304,24 @@ Future<void> cleanupFirebaseData() async {
     print('🗑️ Deleted access code: $code');
   }
 
-  // Delete menu items
+  // Delete menu items from demo_restaurant
   final menuItems = ['item_1', 'item_2', 'item_3', 'item_4'];
   for (final id in menuItems) {
-    await firestore.collection('menuItems').doc(id).delete();
-    print('🗑️ Deleted menu item: $id');
+    await firestore
+        .collection('restaurants')
+        .doc('demo_restaurant')
+        .collection('menu')
+        .doc(id)
+        .delete();
+    print('🗑️ Deleted menu item from demo_restaurant: $id');
+
+    await firestore
+        .collection('restaurants')
+        .doc('test_cafe')
+        .collection('menu')
+        .doc(id)
+        .delete();
+    print('🗑️ Deleted menu item from test_cafe: $id');
   }
 
   print('\n✨ Cleanup completed!');

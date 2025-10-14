@@ -25,7 +25,6 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   String _selectedPaymentMethod = 'online';
   bool _isProcessing = false;
-  
 
   @override
   Widget build(BuildContext context) {
@@ -50,21 +49,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           children: [
                             // Order Summary
                             _buildOrderSummary(cartProvider),
-                            
+
                             const SizedBox(height: 24),
-                            
+
                             // Payment Method Selection
                             _buildPaymentMethodSelection(),
-                            
+
                             const SizedBox(height: 24),
-                            
+
                             // Order Details
                             _buildOrderDetails(cartProvider),
                           ],
                         ),
                       ),
                     ),
-                    
+
                     // Checkout Button
                     _buildCheckoutButton(cartProvider),
                   ],
@@ -102,38 +101,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Items List
-          ...cartProvider.items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    '${item.menuItem.name} x${item.quantity}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                    ),
+          ...cartProvider.items
+              .map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${item.menuItem.name} x${item.quantity}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '₹${item.totalPrice.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  '₹${item.totalPrice.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-          )).toList(),
-          
+              )
+              .toList(),
+
           Divider(color: AppColors.textSecondary),
-          
+
           // Total
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -185,9 +188,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Online Payment Option
           _buildPaymentOption(
             'online',
@@ -196,9 +199,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Icons.payment,
             AppColors.primary,
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Cash Payment Option (only for dine-in)
           if (widget.sessionType == 'dine_in')
             _buildPaymentOption(
@@ -221,13 +224,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     Color color,
   ) {
     final isSelected = _selectedPaymentMethod == value;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _selectedPaymentMethod = value),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? color.withValues(alpha: 0.1)
               : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(12),
@@ -270,12 +273,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ],
               ),
             ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: color,
-                size: 24,
-              ),
+            if (isSelected) Icon(Icons.check_circle, color: color, size: 24),
           ],
         ),
       ),
@@ -306,25 +304,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Session Type
-          _buildDetailRow('Order Type', widget.sessionType == 'dine_in' ? 'Dine-In' : 'Parcel'),
-          
+          _buildDetailRow(
+            'Order Type',
+            widget.sessionType == 'dine_in' ? 'Dine-In' : 'Parcel',
+          ),
+
           // Table Number (for dine-in)
           if (widget.tableNumber != null)
             _buildDetailRow('Table', widget.tableNumber!),
-          
+
           // Payment Method
           _buildDetailRow(
-            'Payment', 
-            _selectedPaymentMethod == 'online' ? 'Online Payment' : 'Cash at Counter'
+            'Payment',
+            _selectedPaymentMethod == 'online'
+                ? 'Online Payment'
+                : 'Cash at Counter',
           ),
-          
+
           // Order Status
-          _buildDetailRow('Status', cartProvider.isOrderPlaced ? 'Order Placed' : 'Pending'),
-          
+          _buildDetailRow(
+            'Status',
+            cartProvider.isOrderPlaced ? 'Order Placed' : 'Pending',
+          ),
+
           // Items Count
           _buildDetailRow('Items', '${cartProvider.totalItems} items'),
         ],
@@ -340,10 +346,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           Text(
             value,
@@ -376,7 +379,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isProcessing ? null : () => _processPayment(cartProvider),
+            onPressed: _isProcessing
+                ? null
+                : () => _processPayment(cartProvider),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -394,7 +399,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -421,10 +428,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: AppColors.primary,
-            strokeWidth: 3,
-          ),
+          CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
           const SizedBox(height: 24),
           Text(
             'Processing your order...',
@@ -437,10 +441,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: 8),
           Text(
             'Please wait while we confirm your payment',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -478,7 +479,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     } catch (e) {
       setState(() => _isProcessing = false);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -493,9 +494,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String? _extractCounterNumber() {
     // Extract counter number from table number or session info
     // This could be enhanced based on your counter numbering system
-    return widget.tableNumber != null ? widget.tableNumber!.replaceAll(RegExp(r'[^0-9]'), '') : null;
+    return widget.tableNumber != null
+        ? widget.tableNumber!.replaceAll(RegExp(r'[^0-9]'), '')
+        : null;
   }
-  
+
   void _showSuccessDialog(CartProvider cartProvider) {
     showDialog(
       context: context,
@@ -506,11 +509,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.check_circle,
-              color: AppColors.success,
-              size: 64,
-            ),
+            Icon(Icons.check_circle, color: AppColors.success, size: 64),
             const SizedBox(height: 16),
             Text(
               'Order Successful!',
@@ -523,10 +522,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 8),
             Text(
               'Your order has been placed successfully',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -565,10 +561,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                if (widget.sessionType == 'parcel' && widget.sessionId != null) {
+                if (widget.sessionType == 'parcel' &&
+                    widget.sessionId != null) {
                   // For parcel orders, only clear the cart items but keep session info for tracking
                   cartProvider.clearCartItems();
-                  
+
                   // Redirect to order status screen
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
@@ -578,19 +575,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     ),
                   );
-                } else if (widget.sessionType == 'dine_in' && widget.sessionId != null) {
+                } else if (widget.sessionType == 'dine_in' &&
+                    widget.sessionId != null) {
                   // For dine-in, clear cart and go to review screen to collect optional feedback
                   final tableNum = widget.tableNumber ?? 'Unknown';
                   cartProvider.clearCart();
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
-                      builder: (context) => ReviewScreen(sessionId: widget.sessionId!, tableNumber: tableNum),
+                      builder: (context) => ReviewScreen(
+                        sessionId: widget.sessionId!,
+                        tableNumber: tableNum,
+                      ),
                     ),
                   );
                 } else {
                   // Fallback: clear and go home
                   cartProvider.clearCart();
-                  Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/', (route) => false);
                 }
               },
               style: ElevatedButton.styleFrom(

@@ -1,10 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../services/firebase_service.dart';
 
-enum DiningMode {
-  dineIn,
-  takeAway,
-}
+enum DiningMode { dineIn, takeAway }
 
 class DiningProvider with ChangeNotifier {
   String? _sessionId;
@@ -30,11 +27,11 @@ class DiningProvider with ChangeNotifier {
       _setLoading(true);
       _mode = DiningMode.dineIn;
       _tableNumber = tableNumber;
-      
+
       // Create session in Firestore
       _sessionId = await FirebaseService.createDineInSession(tableNumber);
       _items = [];
-      
+
       notifyListeners();
     } catch (e) {
       _error = 'Failed to start dine-in session: $e';
@@ -78,7 +75,7 @@ class DiningProvider with ChangeNotifier {
       _setLoading(true);
       if (index >= 0 && index < _items.length) {
         _items.removeAt(index);
-        
+
         if (isDineIn && _sessionId != null) {
           // Update Firestore (you'll need to implement this method in FirebaseService)
           // await FirebaseService.removeItemFromDineInSession(_sessionId!, removedItem);
@@ -96,7 +93,7 @@ class DiningProvider with ChangeNotifier {
   Future<void> placeOrder() async {
     try {
       _setLoading(true);
-      
+
       if (_items.isEmpty) {
         throw Exception('Cannot place empty order');
       }
@@ -129,7 +126,7 @@ class DiningProvider with ChangeNotifier {
   Future<void> endSession(String paymentMethod) async {
     try {
       _setLoading(true);
-      
+
       if (isDineIn && _sessionId != null) {
         await FirebaseService.closeDineInSession(_sessionId!, paymentMethod);
         _reset();

@@ -38,10 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     final cartProvider = context.watch<CartProvider>();
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -83,7 +80,9 @@ class _MainScreenState extends State<MainScreen> {
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   child: Icon(
-                    _currentIndex == 0 ? Icons.restaurant : Icons.restaurant_outlined,
+                    _currentIndex == 0
+                        ? Icons.restaurant
+                        : Icons.restaurant_outlined,
                     size: 24,
                   ),
                 ),
@@ -117,12 +116,16 @@ class _MainScreenState extends State<MainScreen> {
                             padding: const EdgeInsets.all(4),
                           ),
                           child: Icon(
-                            _currentIndex == 2 ? Icons.shopping_cart : Icons.shopping_cart_outlined,
+                            _currentIndex == 2
+                                ? Icons.shopping_cart
+                                : Icons.shopping_cart_outlined,
                             size: 24,
                           ),
                         )
                       : Icon(
-                          _currentIndex == 2 ? Icons.shopping_cart : Icons.shopping_cart_outlined,
+                          _currentIndex == 2
+                              ? Icons.shopping_cart
+                              : Icons.shopping_cart_outlined,
                           size: 24,
                         ),
                 ),

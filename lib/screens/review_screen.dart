@@ -6,7 +6,11 @@ class ReviewScreen extends StatelessWidget {
   final String sessionId;
   final String tableNumber;
 
-  const ReviewScreen({super.key, required this.sessionId, required this.tableNumber});
+  const ReviewScreen({
+    super.key,
+    required this.sessionId,
+    required this.tableNumber,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -70,10 +74,13 @@ class _ReviewFormState extends State<_ReviewForm> {
   Future<void> _submitAndContinue() async {
     final name = _nameController.text.trim();
     final message = _messageController.text.trim();
-    
+
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Please enter your name'), backgroundColor: AppColors.warning),
+        SnackBar(
+          content: const Text('Please enter your name'),
+          backgroundColor: AppColors.warning,
+        ),
       );
       return;
     }
@@ -84,16 +91,16 @@ class _ReviewFormState extends State<_ReviewForm> {
       if (mounted) {
         // Store the submitted review to display
         setState(() {
-          _submittedReview = {
-            'name': name,
-            'message': message,
-          };
+          _submittedReview = {'name': name, 'message': message};
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Thanks for your feedback!'), backgroundColor: AppColors.success),
+          SnackBar(
+            content: const Text('Thanks for your feedback!'),
+            backgroundColor: AppColors.success,
+          ),
         );
-        
+
         // Navigate to home after a short delay to show the success message
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
@@ -103,7 +110,10 @@ class _ReviewFormState extends State<_ReviewForm> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving review: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text('Error saving review: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -122,7 +132,9 @@ class _ReviewFormState extends State<_ReviewForm> {
             decoration: BoxDecoration(
               color: AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.success.withValues(alpha: 0.3),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +156,10 @@ class _ReviewFormState extends State<_ReviewForm> {
                   const SizedBox(height: 4),
                   Text(
                     'Message: ${_submittedReview!['message']}',
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ],
@@ -191,24 +206,32 @@ class _ReviewFormState extends State<_ReviewForm> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: _saving 
-              ? const CircularProgressIndicator(color: Colors.white)
-              : const Text('Submit & Done'),
+            child: _saving
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text('Submit & Done'),
           ),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
-          onPressed: _saving ? null : () {
-            // Continue ordering without submitting review
-            Navigator.of(context).pushNamedAndRemoveUntil('/menu', (r) => false);
-          },
+          onPressed: _saving
+              ? null
+              : () {
+                  // Continue ordering without submitting review
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil('/menu', (r) => false);
+                },
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.primary,
             side: BorderSide(color: AppColors.primary),
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 28),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           child: const Text('Continue Ordering'),
         ),

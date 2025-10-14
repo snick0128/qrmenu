@@ -56,7 +56,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.3),
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -76,19 +78,21 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         const SizedBox(height: 16),
                         Text(
                           languageProvider.getText('rate_your_order'),
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           '${languageProvider.getText('order_id')}: #${widget.orderId}',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontFamily: 'monospace',
-                            color: AppColors.textSecondary,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontFamily: 'monospace',
+                                color: AppColors.textSecondary,
+                              ),
                         ),
                       ],
                     ),
@@ -124,26 +128,27 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                           allowHalfRating: false,
                           itemCount: 5,
                           itemSize: 48,
-                          itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          itemBuilder: (context, index) => Icon(
-                            Icons.star,
-                            color: AppColors.warning,
+                          itemPadding: const EdgeInsets.symmetric(
+                            horizontal: 4.0,
                           ),
+                          itemBuilder: (context, index) =>
+                              Icon(Icons.star, color: AppColors.warning),
                           onRatingUpdate: (rating) {
                             setState(() {
                               _rating = rating;
                             });
                           },
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         Text(
                           _getRatingText(_rating, languageProvider),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: _getRatingColor(_rating),
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: _getRatingColor(_rating),
+                              ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -208,34 +213,45 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       border: Border.all(color: AppColors.surfaceVariant),
                     ),
                     child: Column(
-                      children: widget.orderItems.map((item) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: item.menuItem.isVeg ? AppColors.veg : AppColors.nonVeg,
-                                borderRadius: BorderRadius.circular(1),
+                      children: widget.orderItems
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: item.menuItem.isVeg
+                                          ? AppColors.veg
+                                          : AppColors.nonVeg,
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      item.menuItem.name,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                  Text(
+                                    'x${item.quantity}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                item.menuItem.name,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                            Text(
-                              'x${item.quantity}',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )).toList(),
+                          )
+                          .toList(),
                     ),
                   ),
 
@@ -279,25 +295,25 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
                                 strokeWidth: 2,
                               ),
                             )
                           : Text(languageProvider.getText('submit_feedback')),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   TextButton(
                     onPressed: !_isSubmitting
                         ? () => _returnToMenu(context)
                         : null,
                     child: Text(
                       'Skip and continue browsing',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -325,7 +341,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return AppColors.success;
   }
 
-  void _submitFeedback(BuildContext context, AppLanguageProvider languageProvider) async {
+  void _submitFeedback(
+    BuildContext context,
+    AppLanguageProvider languageProvider,
+  ) async {
     if (_rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -378,10 +397,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   children: [
                     RatingBarIndicator(
                       rating: _rating,
-                      itemBuilder: (context, index) => Icon(
-                        Icons.star,
-                        color: AppColors.warning,
-                      ),
+                      itemBuilder: (context, index) =>
+                          Icon(Icons.star, color: AppColors.warning),
                       itemCount: 5,
                       itemSize: 20,
                     ),

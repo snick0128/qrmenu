@@ -9,11 +9,7 @@ const mockRestaurant = RestaurantModel(
   phone: '+91 9876543210',
   tableNumber: '7',
   logoUrl: 'https://via.placeholder.com/200x200/FF6B35/FFFFFF?text=SG',
-  settings: {
-    'currency': 'INR',
-    'tax_rate': 0.18,
-    'service_charge': 0.10,
-  },
+  settings: {'currency': 'INR', 'tax_rate': 0.18, 'service_charge': 0.10},
 );
 
 // Mock Menu Data with Quick Order Items
@@ -25,7 +21,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Soft, warm Indian bread with butter',
     price: 25.0,
     category: 'Breads',
-    imageUrl: 'https://via.placeholder.com/300x200/FFB6C1/000000?text=Butter+Roti',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FFB6C1/000000?text=Butter+Roti',
     isVeg: true,
     isPopular: true,
     isQuickOrder: true,
@@ -33,14 +30,15 @@ final List<MenuItemModel> mockMenu = [
     reviewCount: 150,
     preparationTime: '5-8 min',
   ),
-  
+
   const MenuItemModel(
     id: 'quick_002',
     name: 'Plain Roti',
     description: 'Traditional Indian flatbread',
     price: 20.0,
     category: 'Breads',
-    imageUrl: 'https://via.placeholder.com/300x200/DEB887/000000?text=Plain+Roti',
+    imageUrl:
+        'https://via.placeholder.com/300x200/DEB887/000000?text=Plain+Roti',
     isVeg: true,
     isPopular: true,
     isQuickOrder: true,
@@ -55,7 +53,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Traditional Indian spiced tea',
     price: 15.0,
     category: 'Beverages',
-    imageUrl: 'https://via.placeholder.com/300x200/CD853F/FFFFFF?text=Masala+Chai',
+    imageUrl:
+        'https://via.placeholder.com/300x200/CD853F/FFFFFF?text=Masala+Chai',
     isVeg: true,
     isPopular: true,
     isQuickOrder: true,
@@ -100,7 +99,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Spicy deep-fried chicken with curry leaves',
     price: 180.0,
     category: 'Starters',
-    imageUrl: 'https://via.placeholder.com/300x200/DC143C/FFFFFF?text=Chicken+65',
+    imageUrl:
+        'https://via.placeholder.com/300x200/DC143C/FFFFFF?text=Chicken+65',
     isVeg: false,
     isSpicy: true,
     isPopular: true,
@@ -115,7 +115,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Grilled cottage cheese cubes marinated in spices',
     price: 220.0,
     category: 'Starters',
-    imageUrl: 'https://via.placeholder.com/300x200/FF4500/FFFFFF?text=Paneer+Tikka',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FF4500/FFFFFF?text=Paneer+Tikka',
     isVeg: true,
     isSpicy: true,
     isPopular: true,
@@ -131,7 +132,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Creamy tomato-based curry with tender chicken pieces',
     price: 280.0,
     category: 'Main Course',
-    imageUrl: 'https://via.placeholder.com/300x200/FF6347/FFFFFF?text=Butter+Chicken',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FF6347/FFFFFF?text=Butter+Chicken',
     isVeg: false,
     isSpicy: false,
     isPopular: true,
@@ -147,7 +149,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Yellow lentils tempered with cumin and garlic',
     price: 160.0,
     category: 'Main Course',
-    imageUrl: 'https://via.placeholder.com/300x200/DAA520/000000?text=Dal+Tadka',
+    imageUrl:
+        'https://via.placeholder.com/300x200/DAA520/000000?text=Dal+Tadka',
     isVeg: true,
     isSpicy: false,
     isPopular: true,
@@ -162,7 +165,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Rich and creamy cottage cheese curry',
     price: 240.0,
     category: 'Main Course',
-    imageUrl: 'https://via.placeholder.com/300x200/FF69B4/FFFFFF?text=Paneer+Makhani',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FF69B4/FFFFFF?text=Paneer+Makhani',
     isVeg: true,
     isSpicy: false,
     rating: 4.5,
@@ -177,7 +181,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Aromatic basmati rice with marinated chicken and spices',
     price: 320.0,
     category: 'Rice & Biryani',
-    imageUrl: 'https://via.placeholder.com/300x200/8B4513/FFFFFF?text=Chicken+Biryani',
+    imageUrl:
+        'https://via.placeholder.com/300x200/8B4513/FFFFFF?text=Chicken+Biryani',
     isVeg: false,
     isSpicy: true,
     isPopular: true,
@@ -192,7 +197,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Fragrant rice with mixed vegetables and aromatic spices',
     price: 250.0,
     category: 'Rice & Biryani',
-    imageUrl: 'https://via.placeholder.com/300x200/228B22/FFFFFF?text=Veg+Biryani',
+    imageUrl:
+        'https://via.placeholder.com/300x200/228B22/FFFFFF?text=Veg+Biryani',
     isVeg: true,
     isSpicy: true,
     rating: 4.3,
@@ -207,7 +213,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Soft leavened bread topped with fresh garlic',
     price: 45.0,
     category: 'Breads',
-    imageUrl: 'https://via.placeholder.com/300x200/F5DEB3/000000?text=Garlic+Naan',
+    imageUrl:
+        'https://via.placeholder.com/300x200/F5DEB3/000000?text=Garlic+Naan',
     isVeg: true,
     rating: 4.5,
     reviewCount: 198,
@@ -221,7 +228,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Naan stuffed with melted cheese',
     price: 65.0,
     category: 'Breads',
-    imageUrl: 'https://via.placeholder.com/300x200/FFD700/000000?text=Cheese+Naan',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FFD700/000000?text=Cheese+Naan',
     isVeg: true,
     rating: 4.6,
     reviewCount: 156,
@@ -236,7 +244,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Refreshing lime drink with soda water',
     price: 35.0,
     category: 'Beverages',
-    imageUrl: 'https://via.placeholder.com/300x200/32CD32/FFFFFF?text=Lime+Soda',
+    imageUrl:
+        'https://via.placeholder.com/300x200/32CD32/FFFFFF?text=Lime+Soda',
     isVeg: true,
     rating: 4.2,
     reviewCount: 87,
@@ -249,7 +258,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Creamy yogurt drink blended with fresh mango',
     price: 55.0,
     category: 'Beverages',
-    imageUrl: 'https://via.placeholder.com/300x200/FFD700/000000?text=Mango+Lassi',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FFD700/000000?text=Mango+Lassi',
     isVeg: true,
     rating: 4.7,
     reviewCount: 123,
@@ -263,7 +273,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'South Indian style filtered coffee',
     price: 25.0,
     category: 'Beverages',
-    imageUrl: 'https://via.placeholder.com/300x200/8B4513/FFFFFF?text=Filter+Coffee',
+    imageUrl:
+        'https://via.placeholder.com/300x200/8B4513/FFFFFF?text=Filter+Coffee',
     isVeg: true,
     rating: 4.4,
     reviewCount: 145,
@@ -278,7 +289,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Soft milk dumplings in sugar syrup',
     price: 60.0,
     category: 'Desserts',
-    imageUrl: 'https://via.placeholder.com/300x200/8B0000/FFFFFF?text=Gulab+Jamun',
+    imageUrl:
+        'https://via.placeholder.com/300x200/8B0000/FFFFFF?text=Gulab+Jamun',
     isVeg: true,
     rating: 4.5,
     reviewCount: 89,
@@ -292,7 +304,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Premium vanilla ice cream scoop',
     price: 45.0,
     category: 'Desserts',
-    imageUrl: 'https://via.placeholder.com/300x200/FFF8DC/000000?text=Vanilla+Ice+Cream',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FFF8DC/000000?text=Vanilla+Ice+Cream',
     isVeg: true,
     rating: 4.3,
     reviewCount: 67,
@@ -307,7 +320,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Stuffed flatbread with spiced potato filling',
     price: 80.0,
     category: 'Breads',
-    imageUrl: 'https://via.placeholder.com/300x200/D2691E/FFFFFF?text=Aloo+Paratha',
+    imageUrl:
+        'https://via.placeholder.com/300x200/D2691E/FFFFFF?text=Aloo+Paratha',
     isVeg: true,
     isSpicy: true,
     isPopular: true,
@@ -323,7 +337,8 @@ final List<MenuItemModel> mockMenu = [
     description: 'Spicy chickpea curry with fluffy fried bread',
     price: 140.0,
     category: 'Main Course',
-    imageUrl: 'https://via.placeholder.com/300x200/FF4500/FFFFFF?text=Chole+Bhature',
+    imageUrl:
+        'https://via.placeholder.com/300x200/FF4500/FFFFFF?text=Chole+Bhature',
     isVeg: true,
     isSpicy: true,
     isPopular: true,
@@ -361,11 +376,11 @@ List<String> getCategories() {
 // Search items
 List<MenuItemModel> searchItems(String query) {
   if (query.isEmpty) return mockMenu;
-  
+
   final lowerQuery = query.toLowerCase();
   return mockMenu.where((item) {
     return item.name.toLowerCase().contains(lowerQuery) ||
-           item.description.toLowerCase().contains(lowerQuery) ||
-           item.category.toLowerCase().contains(lowerQuery);
+        item.description.toLowerCase().contains(lowerQuery) ||
+        item.category.toLowerCase().contains(lowerQuery);
   }).toList();
 }

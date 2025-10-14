@@ -34,7 +34,7 @@ class CartScreen extends StatelessWidget {
             // Session Info Header
             if (sessionType == 'dine_in' && tableNumber != null)
               _buildSessionHeader(context, tableNumber!),
-            
+
             // Cart Items
             Expanded(
               child: ListView(
@@ -49,7 +49,7 @@ class CartScreen extends StatelessWidget {
                       cartProvider,
                       ItemStatus.pending,
                     ),
-                  
+
                   // Preparing Items
                   if (cartProvider.preparingItems.isNotEmpty)
                     _buildStatusSection(
@@ -59,7 +59,7 @@ class CartScreen extends StatelessWidget {
                       cartProvider,
                       ItemStatus.preparing,
                     ),
-                  
+
                   // Served Items
                   if (cartProvider.servedItems.isNotEmpty)
                     _buildStatusSection(
@@ -72,7 +72,7 @@ class CartScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Order Summary
             _buildOrderSummary(context, cartProvider),
           ],
@@ -103,10 +103,7 @@ class CartScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Add some delicious items to get started!',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -128,11 +125,7 @@ class CartScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.table_restaurant,
-            color: AppColors.primary,
-            size: 24,
-          ),
+          Icon(Icons.table_restaurant, color: AppColors.primary, size: 24),
           const SizedBox(width: 12),
           Text(
             'Table $tableNumber',
@@ -260,9 +253,10 @@ class CartScreen extends StatelessWidget {
               ),
             ],
           ),
-          
+
           // Special Instructions
-          if (item.specialInstructions != null && item.specialInstructions!.isNotEmpty)
+          if (item.specialInstructions != null &&
+              item.specialInstructions!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
@@ -274,7 +268,7 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
             ),
-          
+
           // Quantity Controls
           const SizedBox(height: 12),
           Row(
@@ -282,12 +276,9 @@ class CartScreen extends StatelessWidget {
               // Quantity Label
               Text(
                 'Quantity: ',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
-              
+
               // Quantity Controls
               if (_canModifyQuantity(status, item))
                 Row(
@@ -298,7 +289,8 @@ class CartScreen extends StatelessWidget {
                       item,
                       cartProvider,
                       Icons.remove,
-                      () => cartProvider.updateQuantity(index, item.quantity - 1),
+                      () =>
+                          cartProvider.updateQuantity(index, item.quantity - 1),
                     ),
                     Container(
                       width: 40,
@@ -325,13 +317,17 @@ class CartScreen extends StatelessWidget {
                       item,
                       cartProvider,
                       Icons.add,
-                      () => cartProvider.updateQuantity(index, item.quantity + 1),
+                      () =>
+                          cartProvider.updateQuantity(index, item.quantity + 1),
                     ),
                   ],
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: _getStatusColor(status).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
@@ -345,9 +341,9 @@ class CartScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              
+
               const Spacer(),
-              
+
               // Action Buttons
               if (status == ItemStatus.served)
                 ElevatedButton.icon(
@@ -357,7 +353,10 @@ class CartScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 )
               else if (status == ItemStatus.pending)
@@ -418,10 +417,7 @@ class CartScreen extends StatelessWidget {
             children: [
               Text(
                 'Total Items:',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               ),
               Text(
                 '${cartProvider.totalItems}',
@@ -455,13 +451,14 @@ class CartScreen extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Action Buttons
           Row(
             children: [
-              if (!cartProvider.isOrderPlaced && cartProvider.pendingItems.isNotEmpty)
+              if (!cartProvider.isOrderPlaced &&
+                  cartProvider.pendingItems.isNotEmpty)
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => cartProvider.placeOrder(),
@@ -474,8 +471,9 @@ class CartScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              
-              if (cartProvider.isOrderPlaced || cartProvider.pendingItems.isEmpty)
+
+              if (cartProvider.isOrderPlaced ||
+                  cartProvider.pendingItems.isEmpty)
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => _goToCheckout(context),

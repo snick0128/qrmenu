@@ -12,7 +12,8 @@ class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
 
   @override
-  State<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
+  State<LanguageSelectionScreen> createState() =>
+      _LanguageSelectionScreenState();
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
@@ -56,7 +57,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              
+
               // App logo and welcome message
               Container(
                 width: 120,
@@ -78,9 +79,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   color: Colors.white,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               Text(
                 'Welcome to QR Menu',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -89,19 +90,19 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               Text(
                 'Please select your preferred language',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Language options
               Expanded(
                 child: ListView.builder(
@@ -109,7 +110,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   itemBuilder: (context, index) {
                     final language = languages[index];
                     final isSelected = selectedLanguage == language.code;
-                    
+
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       child: Material(
@@ -124,12 +125,12 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: isSelected 
+                              color: isSelected
                                   ? AppColors.primary.withOpacity(0.1)
                                   : AppColors.surface,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected 
+                                color: isSelected
                                     ? AppColors.primary
                                     : AppColors.surfaceVariant,
                                 width: isSelected ? 2 : 1,
@@ -137,7 +138,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                               boxShadow: isSelected
                                   ? [
                                       BoxShadow(
-                                        color: AppColors.primary.withOpacity(0.2),
+                                        color: AppColors.primary.withOpacity(
+                                          0.2,
+                                        ),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -153,26 +156,34 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         language.name,
-                                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                          color: isSelected 
-                                              ? AppColors.primary
-                                              : AppColors.textPrimary,
-                                          fontWeight: isSelected 
-                                              ? FontWeight.bold
-                                              : FontWeight.w500,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge
+                                            ?.copyWith(
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                  : AppColors.textPrimary,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w500,
+                                            ),
                                       ),
                                       Text(
                                         language.nativeName,
-                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                          color: isSelected 
-                                              ? AppColors.primary.withOpacity(0.8)
-                                              : AppColors.textSecondary,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                        .withOpacity(0.8)
+                                                  : AppColors.textSecondary,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -211,12 +222,12 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   },
                 ),
               ),
-              
+
               // Continue button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: selectedLanguage != null 
+                  onPressed: selectedLanguage != null
                       ? () => _continueWithLanguage(context)
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -229,9 +240,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   child: const Text('Continue'),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Skip button
               TextButton(
                 onPressed: () => _continueWithLanguage(context),
@@ -243,27 +254,21 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Debug bypass button
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.warning.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.warning.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.bug_report,
-                      color: AppColors.warning,
-                      size: 16,
-                    ),
+                    Icon(Icons.bug_report, color: AppColors.warning, size: 16),
                     const SizedBox(width: 8),
                     TextButton(
                       onPressed: () => _skipDirectlyToMenu(context),
@@ -279,7 +284,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
             ],
           ),
@@ -293,21 +298,19 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     if (selectedLanguage != null) {
       context.read<AppLanguageProvider>().setLanguage(selectedLanguage!);
     }
-    
+
     // Navigate to QR scanner
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const QRScannerScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const QRScannerScreen()),
     );
   }
-  
+
   void _skipDirectlyToMenu(BuildContext context) {
     // Set the selected language in the provider
     if (selectedLanguage != null) {
       context.read<AppLanguageProvider>().setLanguage(selectedLanguage!);
     }
-    
+
     // Create mock restaurant data
     final restaurant = RestaurantModel(
       id: 'debug_001',
@@ -317,10 +320,10 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       tableNumber: '99',
       logoUrl: 'https://via.placeholder.com/200x200/FF6B35/FFFFFF?text=DEBUG',
     );
-    
+
     // Set restaurant data in provider
     context.read<MenuProvider>().setRestaurant(restaurant);
-    
+
     // Navigate directly to main screen with mock data
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(

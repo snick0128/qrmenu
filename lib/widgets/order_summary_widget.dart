@@ -36,33 +36,23 @@ class OrderSummaryWidget extends StatelessWidget {
         children: [
           Text(
             'Bill Details',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Subtotal
-          _buildPriceRow(
-            context,
-            'Item Total',
-            subtotal,
-            isSubtotal: true,
-          ),
-          
+          _buildPriceRow(context, 'Item Total', subtotal, isSubtotal: true),
+
           const SizedBox(height: 8),
-          
+
           // Tax
-          _buildPriceRow(
-            context,
-            'GST (18%)',
-            tax,
-            isSecondary: true,
-          ),
-          
+          _buildPriceRow(context, 'GST (18%)', tax, isSecondary: true),
+
           const SizedBox(height: 8),
-          
+
           // Service charge
           _buildPriceRow(
             context,
@@ -70,27 +60,19 @@ class OrderSummaryWidget extends StatelessWidget {
             serviceCharge,
             isSecondary: true,
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Divider
-          Container(
-            height: 1,
-            color: AppColors.textTertiary.withOpacity(0.3),
-          ),
-          
+          Container(height: 1, color: AppColors.textTertiary.withOpacity(0.3)),
+
           const SizedBox(height: 12),
-          
+
           // Total
-          _buildPriceRow(
-            context,
-            'Grand Total',
-            total,
-            isTotal: true,
-          ),
-          
+          _buildPriceRow(context, 'Grand Total', total, isTotal: true),
+
           const SizedBox(height: 8),
-          
+
           // Savings message (if applicable)
           if (subtotal > 200) ...[
             Container(
@@ -98,24 +80,18 @@ class OrderSummaryWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.success.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: AppColors.success.withOpacity(0.3),
-                ),
+                border: Border.all(color: AppColors.success.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.local_offer,
-                    color: AppColors.success,
-                    size: 16,
-                  ),
+                  Icon(Icons.local_offer, color: AppColors.success, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'You\'re saving 5% on orders above ₹200!',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.success,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppColors.success),
                     ),
                   ),
                 ],
@@ -141,14 +117,14 @@ class OrderSummaryWidget extends StatelessWidget {
           child: Text(
             label,
             style: isTotal
-                ? Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  )
+                ? Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
                 : isSecondary
-                    ? Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      )
-                    : Theme.of(context).textTheme.bodyLarge,
+                ? Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  )
+                : Theme.of(context).textTheme.bodyLarge,
           ),
         ),
         Text(
@@ -159,10 +135,10 @@ class OrderSummaryWidget extends StatelessWidget {
                   color: AppColors.primary,
                 )
               : isSecondary
-                  ? Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    )
-                  : Theme.of(context).textTheme.bodyLarge,
+              ? Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)
+              : Theme.of(context).textTheme.bodyLarge,
         ),
       ],
     );

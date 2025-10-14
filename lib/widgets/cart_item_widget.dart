@@ -41,9 +41,9 @@ class CartItemWidget extends StatelessWidget {
                     size: 24,
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Item details
                 Expanded(
                   child: Column(
@@ -75,9 +75,9 @@ class CartItemWidget extends StatelessWidget {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // Price
                       Text(
                         '₹${cartItem.menuItem.price.toStringAsFixed(0)} each',
@@ -85,13 +85,16 @@ class CartItemWidget extends StatelessWidget {
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      
+
                       // Special instructions
                       if (cartItem.specialInstructions != null &&
                           cartItem.specialInstructions!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.info.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
@@ -101,9 +104,8 @@ class CartItemWidget extends StatelessWidget {
                           ),
                           child: Text(
                             'Note: ${cartItem.specialInstructions}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.info,
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: AppColors.info),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -112,25 +114,22 @@ class CartItemWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // Remove button
                 IconButton(
                   onPressed: onRemove,
-                  icon: Icon(
-                    Icons.delete_outline,
-                    color: AppColors.error,
-                  ),
+                  icon: Icon(Icons.delete_outline, color: AppColors.error),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.error.withOpacity(0.1),
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Quantity controls and total price
             Row(
               children: [
@@ -144,7 +143,7 @@ class CartItemWidget extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        onPressed: cartItem.quantity > 1 
+                        onPressed: cartItem.quantity > 1
                             ? () => onQuantityChanged(cartItem.quantity - 1)
                             : null,
                         icon: const Icon(Icons.remove, size: 18),
@@ -162,7 +161,8 @@ class CartItemWidget extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: () => onQuantityChanged(cartItem.quantity + 1),
+                        onPressed: () =>
+                            onQuantityChanged(cartItem.quantity + 1),
                         icon: const Icon(Icons.add, size: 18),
                         style: IconButton.styleFrom(
                           minimumSize: const Size(40, 40),
@@ -172,9 +172,9 @@ class CartItemWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const Spacer(),
-                
+
                 // Total price for this item
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -196,14 +196,17 @@ class CartItemWidget extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             // Add special instructions option
             if (onInstructionsChanged != null) ...[
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: () => _showInstructionsDialog(context),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.textTertiary),
                     borderRadius: BorderRadius.circular(6),

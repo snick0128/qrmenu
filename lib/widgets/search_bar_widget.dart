@@ -44,13 +44,10 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
             focusNode: _focusNode,
             decoration: InputDecoration(
               hintText: 'Search menu items...',
-              hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textTertiary,
-              ),
-              prefixIcon: Icon(
-                Icons.search,
-                color: AppColors.textTertiary,
-              ),
+              hintStyle: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textTertiary),
+              prefixIcon: Icon(Icons.search, color: AppColors.textTertiary),
               suffixIcon: menuProvider.searchQuery.isNotEmpty
                   ? IconButton(
                       onPressed: () {
@@ -58,10 +55,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                         menuProvider.clearSearch();
                         _focusNode.unfocus();
                       },
-                      icon: Icon(
-                        Icons.clear,
-                        color: AppColors.textTertiary,
-                      ),
+                      icon: Icon(Icons.clear, color: AppColors.textTertiary),
                     )
                   : null,
               border: InputBorder.none,
@@ -80,9 +74,8 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SearchResultsScreen(
-                      searchQuery: value,
-                    ),
+                    builder: (context) =>
+                        SearchResultsScreen(searchQuery: value),
                   ),
                 );
               }

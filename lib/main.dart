@@ -5,9 +5,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'services/auth_service.dart';
 import 'services/firebase_service.dart';
+import 'services/session_service.dart';
 import 'screens/manual_table_entry_screen.dart';
 import 'screens/menu_screen.dart';
 import 'screens/error_screen.dart';
+import 'screens/admin_login_screen.dart';
+import 'screens/admin_dashboard_screen.dart';
 import 'providers/dining_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/menu_provider.dart';
@@ -20,17 +23,29 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize Firebase Core
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     debugPrint('Firebase Core initialized successfully');
 
+    // Initialize Firebase service and auth with persistence
     await FirebaseService.initialize();
-    debugPrint('FirebaseService initialized successfully');
+    await AuthService.initialize(); // Set up local persistence
+    debugPrint('Firebase services initialized successfully');
 
+    // Sign in anonymously (will reuse existing session if available)
     final user = await AuthService.signInAsGuest();
     if (user != null) {
       debugPrint('Using guest user: ${user.uid}');
+
+      // Check for existing session in Firestore
+      final session = await SessionService.getCurrentSession();
+      if (session != null) {
+        debugPrint(
+          'Found existing session for hotel: ${session.hotelId}, table: ${session.tableNo}',
+        );
+      }
     }
   } catch (e) {
     debugPrint('Error initializing Firebase: $e');
@@ -48,33 +63,46 @@ class QRMenuApp extends StatelessWidget {
       debugLogDiagnostics: true, // Enable router debug logs
       routes: [
         GoRoute(
+          path: '/admin/login',
+          builder: (context, state) => const AdminLoginScreen(),
+        ),
+        GoRoute(
+          path: '/admin/dashboard',
+          builder: (context, state) => const AdminDashboardScreen(),
+        ),
+        GoRoute(
           path: '/:restaurantId/:tableCode',
           builder: (context, state) {
             final restaurantId = state.pathParameters['restaurantId']!;
-            final tableCode = state.pathParameters['tableCode']!; // Keep original case from URL
-            
-            debugPrint('🔍 URL Params - Restaurant: $restaurantId, Table Code: $tableCode');
+            final tableCode = state
+                .pathParameters['tableCode']!; // Keep original case from URL
+
+            debugPrint(
+              '🔍 URL Params - Restaurant: $restaurantId, Table Code: $tableCode',
+            );
 
             return FutureBuilder<DocumentSnapshot?>(
               future: FirebaseService.restaurants.doc(restaurantId).get(),
               builder: (context, restaurantSnapshot) {
-                if (restaurantSnapshot.connectionState == ConnectionState.waiting) {
+                if (restaurantSnapshot.connectionState ==
+                    ConnectionState.waiting) {
                   return const Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    body: Center(child: CircularProgressIndicator()),
                   );
                 }
 
                 // Invalid restaurant ID - show error page
-                if (!restaurantSnapshot.hasData || !restaurantSnapshot.data!.exists) {
+                if (!restaurantSnapshot.hasData ||
+                    !restaurantSnapshot.data!.exists) {
                   debugPrint('❌ Restaurant NOT found: $restaurantId');
                   return const ErrorScreen(
-                    message: 'Invalid Restaurant ID. Please check your QR code and try again.',
+                    message:
+                        'Invalid Restaurant ID. Please check your QR code and try again.',
                   );
                 }
 
-                final restaurantData = restaurantSnapshot.data!.data() as Map<String, dynamic>;
+                final restaurantData =
+                    restaurantSnapshot.data!.data() as Map<String, dynamic>;
                 final restaurantName = restaurantData['name'] as String;
                 debugPrint('✅ Restaurant found: $restaurantName');
 
@@ -82,11 +110,10 @@ class QRMenuApp extends StatelessWidget {
                 return FutureBuilder<DocumentSnapshot?>(
                   future: FirebaseService.accessCodes.doc(tableCode).get(),
                   builder: (context, tableSnapshot) {
-                    if (tableSnapshot.connectionState == ConnectionState.waiting) {
+                    if (tableSnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return const Scaffold(
-                        body: Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        body: Center(child: CircularProgressIndicator()),
                       );
                     }
 
@@ -99,13 +126,17 @@ class QRMenuApp extends StatelessWidget {
                       );
                     }
 
-                    final tableData = tableSnapshot.data!.data() as Map<String, dynamic>;
+                    final tableData =
+                        tableSnapshot.data!.data() as Map<String, dynamic>;
                     final isActive = tableData['isActive'] as bool? ?? false;
-                    final sessionType = tableData['type'] as String? ?? 'unknown';
-                    
-                    debugPrint('📋 Table data - isActive: $isActive, type: $sessionType');
+                    final sessionType =
+                        tableData['type'] as String? ?? 'unknown';
+
+                    debugPrint(
+                      '📋 Table data - isActive: $isActive, type: $sessionType',
+                    );
                     debugPrint('📄 Full table data: $tableData');
-                    
+
                     // Inactive table code - go to manual entry
                     if (!isActive) {
                       debugPrint('⚠️ Table code is INACTIVE: $tableCode');
@@ -116,7 +147,7 @@ class QRMenuApp extends StatelessWidget {
                     }
 
                     debugPrint('✅ Valid table code! Navigating to menu...');
-                    
+
                     // Valid restaurant and table code - proceed to menu
                     return MenuScreen(
                       restaurantName: restaurantName,
@@ -133,26 +164,26 @@ class QRMenuApp extends StatelessWidget {
           path: '/:restaurantId',
           builder: (context, state) {
             final restaurantId = state.pathParameters['restaurantId']!;
-            
+
             // Validate restaurant before showing manual entry
             return FutureBuilder<DocumentSnapshot?>(
               future: FirebaseService.restaurants.doc(restaurantId).get(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    body: Center(child: CircularProgressIndicator()),
                   );
                 }
 
                 if (!snapshot.hasData || !snapshot.data!.exists) {
                   return const ErrorScreen(
-                    message: 'Invalid Restaurant ID. Please check your QR code and try again.',
+                    message:
+                        'Invalid Restaurant ID. Please check your QR code and try again.',
                   );
                 }
 
-                final restaurantData = snapshot.data!.data() as Map<String, dynamic>;
+                final restaurantData =
+                    snapshot.data!.data() as Map<String, dynamic>;
                 final restaurantName = restaurantData['name'] as String;
 
                 return ManualTableEntryScreen(

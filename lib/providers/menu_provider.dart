@@ -15,7 +15,9 @@ class MenuProvider with ChangeNotifier {
   RestaurantModel? get restaurant => _restaurant;
   List<MenuItemModel> get menuItems => _filteredItems;
   String get selectedCategory => _selectedCategory;
-  CategoryModel? get selectedCategoryModel => _selectedCategory.isNotEmpty ? CategoryModel.fromString(_selectedCategory) : null;
+  CategoryModel? get selectedCategoryModel => _selectedCategory.isNotEmpty
+      ? CategoryModel.fromString(_selectedCategory)
+      : null;
   String get searchQuery => _searchQuery;
   bool get isLoading => _isLoading;
 
@@ -45,13 +47,32 @@ class MenuProvider with ChangeNotifier {
   }
 
   // Initialize with Firebase data
-  Future<void> initializeWithFirebaseData() async {
+  Future<void> initializeWithFirebaseData(String hotelId) async {
     _isLoading = true;
     notifyListeners();
 
     try {
+      // Load restaurant data
+      final restaurantDoc = await FirebaseService.restaurants
+          .doc(hotelId)
+          .get();
+      if (!restaurantDoc.exists) {
+        throw Exception('Restaurant not found');
+      }
+
+      final restaurantData = restaurantDoc.data() as Map<String, dynamic>;
+      _restaurant = RestaurantModel(
+        id: hotelId,
+        name: restaurantData['name'] ?? 'Unknown Restaurant',
+        address: restaurantData['address'] ?? '',
+        phone: restaurantData['phone'] ?? '',
+        logoUrl: restaurantData['logoUrl'] ?? '',
+      );
+
       // Load menu items from Firebase
-      final menuItemsSnapshot = await FirebaseService.menuItems.get();
+      final menuCollection = FirebaseService.getMenuCollection(hotelId);
+      final menuItemsSnapshot = await menuCollection.get();
+
       final menuItemsData = menuItemsSnapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return MenuItemModel(
@@ -73,14 +94,42 @@ class MenuProvider with ChangeNotifier {
 
       _menuItems = menuItemsData;
 
-      // Create a default restaurant model
-      _restaurant = RestaurantModel(
-        id: 'default_restaurant',
-        name: 'Our Restaurant',
-        address: '123 Main Street, City',
-        phone: '+1 (555) 123-4567',
-        logoUrl: '',
-      );
+      // Load analytics for popular items
+      final analyticsRef = FirebaseService.getAnalyticsCollection(hotelId);
+      final analyticsSnapshot = await analyticsRef.doc('mostOrdered').get();
+
+      if (analyticsSnapshot.exists) {
+        final data = analyticsSnapshot.data() as Map<String, dynamic>;
+        if (data.containsKey('items')) {
+          final popularItemsMap = data['items'] as Map<String, dynamic>;
+          // Sort by order count descending
+          final sortedItems = popularItemsMap.entries.toList()
+            ..sort((a, b) => (b.value as int).compareTo(a.value as int));
+
+          // Take top 10 popular item IDs
+          final popularItemIds = sortedItems.take(10).map((e) => e.key).toSet();
+
+          // Create new menu items list with updated popularity
+          _menuItems = _menuItems
+              .map(
+                (item) => MenuItemModel(
+                  id: item.id,
+                  name: item.name,
+                  description: item.description,
+                  price: item.price,
+                  category: item.category,
+                  imageUrl: item.imageUrl,
+                  isAvailable: item.isAvailable,
+                  isVeg: item.isVeg,
+                  isSpicy: item.isSpicy,
+                  isPopular: popularItemIds.contains(item.id),
+                  isQuickOrder: item.isQuickOrder,
+                  preparationTime: item.preparationTime,
+                ),
+              )
+              .toList();
+        }
+      }
 
       print('Loaded ${_menuItems.length} menu items from Firebase');
     } catch (e) {
@@ -94,9 +143,9 @@ class MenuProvider with ChangeNotifier {
     }
   }
 
-  // Initialize with mock data (now calls Firebase)
-  void initializeWithMockData() {
-    initializeWithFirebaseData();
+  // Initialize with mock data (now calls Firebase with default restaurant)
+  Future<void> initializeWithMockData() async {
+    await initializeWithFirebaseData('default_restaurant');
   }
 
   // Set data from an external seed (local JSON or Firestore snapshot)
@@ -111,15 +160,17 @@ class MenuProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Set restaurant from QR scan
-  void setRestaurantFromQR(RestaurantModel restaurant) {
+  // Set restaurant and load its data from QR scan
+  Future<void> setRestaurantFromQR(RestaurantModel restaurant) async {
     _restaurant = restaurant;
     notifyListeners();
+    await initializeWithFirebaseData(restaurant.id);
   }
 
   // Backwards-compatible setter used in other screens
-  void setRestaurant(RestaurantModel restaurant) =>
-      setRestaurantFromQR(restaurant);
+  Future<void> setRestaurant(RestaurantModel restaurant) async {
+    await setRestaurantFromQR(restaurant);
+  }
 
   // Category management
   void selectCategory(String category) {
@@ -151,7 +202,9 @@ class MenuProvider with ChangeNotifier {
   }
 
   List<CategoryModel> _getCategoryModels() {
-    return _getCategories().map((cat) => CategoryModel.fromString(cat)).toList();
+    return _getCategories()
+        .map((cat) => CategoryModel.fromString(cat))
+        .toList();
   }
 
   List<MenuItemModel> _getQuickOrderItems() {

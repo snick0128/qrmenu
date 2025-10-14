@@ -65,8 +65,4 @@ class SalesAnalytics {
   }
 }
 
-enum DateFilterType {
-  today,
-  week,
-  month,
-}
+enum DateFilterType { today, week, month }

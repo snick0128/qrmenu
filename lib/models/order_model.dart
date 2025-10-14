@@ -3,13 +3,7 @@ import 'cart_item_model.dart';
 
 part 'order_model.g.dart';
 
-enum OrderStatus {
-  pending,
-  preparing,
-  ready,
-  served,
-  cancelled,
-}
+enum OrderStatus { pending, preparing, ready, served, cancelled }
 
 @JsonSerializable()
 class OrderModel {
@@ -37,7 +31,8 @@ class OrderModel {
     this.deliveryAddress,
   });
 
-  factory OrderModel.fromJson(Map<String, dynamic> json) => _$OrderModelFromJson(json);
+  factory OrderModel.fromJson(Map<String, dynamic> json) =>
+      _$OrderModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$OrderModelToJson(this);
 

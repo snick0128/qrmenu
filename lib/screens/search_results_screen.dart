@@ -9,10 +9,7 @@ import '../utils/app_theme.dart';
 class SearchResultsScreen extends StatefulWidget {
   final String searchQuery;
 
-  const SearchResultsScreen({
-    super.key,
-    required this.searchQuery,
-  });
+  const SearchResultsScreen({super.key, required this.searchQuery});
 
   @override
   State<SearchResultsScreen> createState() => _SearchResultsScreenState();
@@ -70,12 +67,15 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           _currentPage++;
           final startIndex = _currentPage * _itemsPerPage;
           final endIndex = (_currentPage + 1) * _itemsPerPage;
-          
+
           if (startIndex < _allSearchResults.length) {
-            final newItems = _allSearchResults.skip(startIndex).take(_itemsPerPage).toList();
+            final newItems = _allSearchResults
+                .skip(startIndex)
+                .take(_itemsPerPage)
+                .toList();
             _displayedItems.addAll(newItems);
           }
-          
+
           _isLoadingMore = false;
         });
       }
@@ -83,7 +83,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       if (_displayedItems.length < _allSearchResults.length) {
         _loadMoreItems();
       }
@@ -148,9 +149,12 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 child: ResponsiveMenuGrid(
                   items: _displayedItems,
                   sessionType: cartProvider.sessionType ?? 'dine_in',
-                  onAddToCart: (item) => _addToCart(context, item, cartProvider),
-                  onIncrement: (item) => _addToCart(context, item, cartProvider),
-                  onDecrement: (item) => _decreaseItemQuantity(context, item, cartProvider),
+                  onAddToCart: (item) =>
+                      _addToCart(context, item, cartProvider),
+                  onIncrement: (item) =>
+                      _addToCart(context, item, cartProvider),
+                  onDecrement: (item) =>
+                      _decreaseItemQuantity(context, item, cartProvider),
                   getItemQuantity: (id) => cartProvider.getItemQuantity(id),
                 ),
               ),
@@ -166,11 +170,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off,
-            size: 64,
-            color: AppColors.textTertiaryDark,
-          ),
+          Icon(Icons.search_off, size: 64, color: AppColors.textTertiaryDark),
           const SizedBox(height: 16),
           Text(
             'No items found',
@@ -183,20 +183,14 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           const SizedBox(height: 8),
           Text(
             'Try searching with different keywords',
-            style: TextStyle(
-              color: AppColors.textSecondaryDark,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 16),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             child: const Text(
               'Back to Menu',
@@ -251,7 +245,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       final itemIndex = cartProvider.items.indexWhere(
         (cartItem) => cartItem.menuItem.id == item.id,
       );
-      
+
       if (itemIndex != -1) {
         final currentQuantity = cartProvider.items[itemIndex].quantity;
         if (currentQuantity > 1) {

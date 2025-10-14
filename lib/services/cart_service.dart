@@ -7,8 +7,8 @@ import 'firebase_service.dart';
 class CartService extends ChangeNotifier {
   final String _cartId;
   final List<CartItemModel> _items = [];
-  final CollectionReference _cartsCollection =
-      FirebaseService.firestore.collection('carts');
+  final CollectionReference _cartsCollection = FirebaseService.firestore
+      .collection('carts');
 
   CartService(this._cartId) {
     _loadCart();
@@ -17,19 +17,25 @@ class CartService extends ChangeNotifier {
   // Getters
   List<CartItemModel> get items => List.unmodifiable(_items);
   int get itemCount => _items.length;
-  double get totalAmount => _items.fold(0, (sum, item) => sum + item.totalPrice);
+  double get totalAmount =>
+      _items.fold(0, (sum, item) => sum + item.totalPrice);
   bool get isEmpty => _items.isEmpty;
 
   // Load cart from Firestore
   Future<void> _loadCart() async {
     try {
-      final DocumentSnapshot cartDoc = await _cartsCollection.doc(_cartId).get();
+      final DocumentSnapshot cartDoc = await _cartsCollection
+          .doc(_cartId)
+          .get();
       if (cartDoc.exists) {
         final data = cartDoc.data() as Map<String, dynamic>;
         final List<dynamic> itemsData = data['items'] ?? [];
         _items.clear();
-        _items.addAll(itemsData
-            .map((item) => CartItemModel.fromJson(item as Map<String, dynamic>)));
+        _items.addAll(
+          itemsData.map(
+            (item) => CartItemModel.fromJson(item as Map<String, dynamic>),
+          ),
+        );
         notifyListeners();
       }
     } catch (e) {
@@ -51,11 +57,14 @@ class CartService extends ChangeNotifier {
   }
 
   // Add item to cart
-  Future<void> addItem(MenuItemModel menuItem, {
+  Future<void> addItem(
+    MenuItemModel menuItem, {
     int quantity = 1,
     String? specialInstructions,
   }) async {
-    final existingItemIndex = _items.indexWhere((i) => i.menuItem.id == menuItem.id);
+    final existingItemIndex = _items.indexWhere(
+      (i) => i.menuItem.id == menuItem.id,
+    );
 
     if (existingItemIndex >= 0) {
       // Update existing item quantity
@@ -65,13 +74,15 @@ class CartService extends ChangeNotifier {
       );
     } else {
       // Add new item
-      _items.add(CartItemModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        menuItem: menuItem,
-        quantity: quantity,
-        specialInstructions: specialInstructions,
-        addedAt: DateTime.now(),
-      ));
+      _items.add(
+        CartItemModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          menuItem: menuItem,
+          quantity: quantity,
+          specialInstructions: specialInstructions,
+          addedAt: DateTime.now(),
+        ),
+      );
     }
 
     notifyListeners();
@@ -107,12 +118,13 @@ class CartService extends ChangeNotifier {
   }
 
   // Update special instructions
-  Future<void> updateSpecialInstructions(String itemId, String? instructions) async {
+  Future<void> updateSpecialInstructions(
+    String itemId,
+    String? instructions,
+  ) async {
     final index = _items.indexWhere((item) => item.id == itemId);
     if (index >= 0) {
-      _items[index] = _items[index].copyWith(
-        specialInstructions: instructions,
-      );
+      _items[index] = _items[index].copyWith(specialInstructions: instructions);
       notifyListeners();
       await _saveCart();
     }

@@ -39,21 +39,13 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.7,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutBack,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
 
     _animationController.forward();
   }
@@ -147,8 +139,12 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [
-                                              AppColors.primary.withOpacity(0.3),
-                                              AppColors.secondary.withOpacity(0.3),
+                                              AppColors.primary.withOpacity(
+                                                0.3,
+                                              ),
+                                              AppColors.secondary.withOpacity(
+                                                0.3,
+                                              ),
                                             ],
                                             begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
@@ -211,7 +207,7 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
                                       size: 12,
                                     ),
                                   ),
-                                  
+
                                   if (widget.item.isSpicy) ...[
                                     const SizedBox(width: 8),
                                     Container(
@@ -221,7 +217,9 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.2),
+                                            color: Colors.black.withOpacity(
+                                              0.2,
+                                            ),
                                             blurRadius: 4,
                                             offset: const Offset(0, 2),
                                           ),
@@ -253,7 +251,9 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.primary.withOpacity(0.3),
+                                        color: AppColors.primary.withOpacity(
+                                          0.3,
+                                        ),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),
@@ -326,9 +326,7 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
                             if (widget.item.description.isNotEmpty)
                               Text(
                                 widget.item.description,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
+                                style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
                                       color: AppColors.textSecondaryDark,
                                       height: 1.5,
@@ -419,11 +417,7 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
         ),
       ),
       child: const Center(
-        child: Icon(
-          Icons.restaurant_menu,
-          color: AppColors.primary,
-          size: 48,
-        ),
+        child: Icon(Icons.restaurant_menu, color: AppColors.primary, size: 48),
       ),
     );
   }
@@ -456,11 +450,7 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
                   ),
                 ),
                 child: const Center(
-                  child: Icon(
-                    Icons.remove,
-                    color: Colors.black,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.remove, color: Colors.black, size: 24),
                 ),
               ),
             ),
@@ -493,11 +483,7 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
                   ),
                 ),
                 child: const Center(
-                  child: Icon(
-                    Icons.add,
-                    color: Colors.black,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.add, color: Colors.black, size: 24),
                 ),
               ),
             ),
@@ -513,7 +499,9 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
       child: Container(
         height: 56,
         decoration: BoxDecoration(
-          color: widget.isLocked ? AppColors.textTertiaryDark : AppColors.primary,
+          color: widget.isLocked
+              ? AppColors.textTertiaryDark
+              : AppColors.primary,
           borderRadius: BorderRadius.circular(16),
           boxShadow: widget.isLocked
               ? null
@@ -531,14 +519,18 @@ class _MenuItemPreviewModalState extends State<MenuItemPreviewModal>
             children: [
               Icon(
                 widget.isLocked ? Icons.lock : Icons.add_shopping_cart,
-                color: widget.isLocked ? AppColors.textSecondaryDark : Colors.black,
+                color: widget.isLocked
+                    ? AppColors.textSecondaryDark
+                    : Colors.black,
                 size: 24,
               ),
               const SizedBox(width: 12),
               Text(
                 widget.isLocked ? 'Locked' : 'Add to Cart',
                 style: TextStyle(
-                  color: widget.isLocked ? AppColors.textSecondaryDark : Colors.black,
+                  color: widget.isLocked
+                      ? AppColors.textSecondaryDark
+                      : Colors.black,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),

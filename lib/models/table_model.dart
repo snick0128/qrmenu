@@ -3,12 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 part 'table_model.g.dart';
 
-enum TableStatus {
-  vacant,
-  reserved,
-  occupied,
-  cleaning,
-}
+enum TableStatus { vacant, reserved, occupied, cleaning }
 
 @JsonSerializable()
 class TableModel {

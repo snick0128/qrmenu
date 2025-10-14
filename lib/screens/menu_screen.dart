@@ -4,6 +4,7 @@ import 'package:badges/badges.dart' as badges;
 import '../providers/menu_provider.dart';
 import '../providers/cart_provider.dart';
 import '../models/menu_item_model.dart';
+import '../services/firebase_service.dart';
 import '../widgets/quick_order_bar.dart';
 import '../widgets/category_tabs.dart';
 import '../widgets/search_bar_widget.dart';
@@ -48,22 +49,40 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     );
 
     // Initialize menu data
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MenuProvider>().initializeWithFirebaseData();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final cartProvider = context.read<CartProvider>();
-      
-      // Use widget parameters or fallback to provider values
       final tableNum = widget.tableNumber ?? cartProvider.tableNumber ?? '';
-      final sessType = widget.sessionType ?? cartProvider.sessionType ?? 'dine_in';
-      
-      if (widget.tableNumber != null && widget.sessionType != null) {
-        cartProvider.initializeSession(
-          tableNum,
-          sessType,
-          tableNumber: tableNum,
-        );
-        cartProvider.loadFromFirebase(tableNum, sessType);
+      final sessType =
+          widget.sessionType ?? cartProvider.sessionType ?? 'dine_in';
+
+      if (tableNum.isNotEmpty) {
+        // Get restaurant ID from table number
+        final tableDoc = await FirebaseService.accessCodes.doc(tableNum).get();
+        if (tableDoc.exists) {
+          final data = tableDoc.data() as Map<String, dynamic>;
+          final hotelId = data['restaurantId'] as String?;
+          if (hotelId != null) {
+            // Initialize menu data with restaurant ID
+            await context.read<MenuProvider>().initializeWithFirebaseData(
+              hotelId,
+            );
+
+            // Initialize cart session if needed
+            if (widget.tableNumber != null && widget.sessionType != null) {
+              cartProvider.initializeSession(
+                tableNum,
+                sessType,
+                tableNumber: tableNum,
+              );
+              await cartProvider.loadFromFirebase(tableNum, sessType);
+            }
+            return;
+          }
+        }
       }
+
+      // Fallback to default restaurant
+      await context.read<MenuProvider>().initializeWithMockData();
     });
   }
 
@@ -184,13 +203,11 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     CartProvider cartProvider,
   ) {
     // Get values from widget or fallback to provider
-    final displayName = widget.restaurantName ?? 
-                       restaurant?.name ?? 
-                       'Restaurant';
-    final displayTable = widget.tableNumber ?? 
-                        cartProvider.tableNumber ?? 
-                        'Table';
-    
+    final displayName =
+        widget.restaurantName ?? restaurant?.name ?? 'Restaurant';
+    final displayTable =
+        widget.tableNumber ?? cartProvider.tableNumber ?? 'Table';
+
     return AppBar(
       backgroundColor: AppColors.surface,
       elevation: 0,
@@ -199,10 +216,10 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         children: [
           Text(
             displayName,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: AppColors.textPrimaryDark,
             ),
           ),
           Text(
@@ -217,7 +234,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           badgeContent: Text(
             '${cartProvider.totalItems}',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textPrimaryDark,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -227,7 +244,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             padding: const EdgeInsets.all(6),
           ),
           child: IconButton(
-            icon: const Icon(Icons.shopping_cart, color: Colors.white),
+            icon: Icon(Icons.shopping_cart, color: AppColors.textPrimaryDark),
             onPressed: () => _tabController.animateTo(1),
           ),
         ),
@@ -236,7 +253,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       bottom: TabBar(
         controller: _tabController,
         indicatorColor: AppColors.primary,
-        labelColor: Colors.white,
+        labelColor: AppColors.textPrimaryDark,
         unselectedLabelColor: AppColors.textSecondary,
         tabs: const [
           Tab(text: 'Menu', icon: Icon(Icons.restaurant_menu)),
@@ -258,13 +275,16 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
     // If a category is selected, show category items
     if (menuProvider.selectedCategory.isNotEmpty) {
-      final categoryItems = menuProvider.getItemsByCategory(menuProvider.selectedCategory);
+      final categoryItems = menuProvider.getItemsByCategory(
+        menuProvider.selectedCategory,
+      );
       return WebMenuGrid(
         items: categoryItems,
         onItemTap: (item) => _addToCart(context, item, cartProvider),
         onAddToCart: (item) => _addToCart(context, item, cartProvider),
         getItemQuantity: (id) => cartProvider.getItemQuantity(id),
-        onDecrement: (item) => _decreaseItemQuantity(context, item, cartProvider),
+        onDecrement: (item) =>
+            _decreaseItemQuantity(context, item, cartProvider),
       );
     }
 
@@ -346,11 +366,14 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
         ),
         Expanded(
           child: WebMenuGrid(
-            items: menuProvider.menuItems.take(6).toList(), // Show first 6 results
+            items: menuProvider.menuItems
+                .take(6)
+                .toList(), // Show first 6 results
             onItemTap: (item) => _addToCart(context, item, cartProvider),
             onAddToCart: (item) => _addToCart(context, item, cartProvider),
             getItemQuantity: (id) => cartProvider.getItemQuantity(id),
-            onDecrement: (item) => _decreaseItemQuantity(context, item, cartProvider),
+            onDecrement: (item) =>
+                _decreaseItemQuantity(context, item, cartProvider),
           ),
         ),
       ],
@@ -372,7 +395,8 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             items: menuProvider.popularItems,
             onAddToCart: (item) => _addToCart(context, item, cartProvider),
             getItemQuantity: (id) => cartProvider.getItemQuantity(id),
-            onDecrement: (item) => _decreaseItemQuantity(context, item, cartProvider),
+            onDecrement: (item) =>
+                _decreaseItemQuantity(context, item, cartProvider),
           ),
 
           // Category sections
@@ -383,7 +407,8 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
               items: categoryItems,
               onAddToCart: (item) => _addToCart(context, item, cartProvider),
               getItemQuantity: (id) => cartProvider.getItemQuantity(id),
-              onDecrement: (item) => _decreaseItemQuantity(context, item, cartProvider),
+              onDecrement: (item) =>
+                  _decreaseItemQuantity(context, item, cartProvider),
             );
           }).toList(),
 
@@ -402,11 +427,11 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     return FloatingActionButton.extended(
       onPressed: () => _goToCheckout(context),
       backgroundColor: AppColors.primary,
-      icon: const Icon(Icons.payment, color: Colors.white),
+      icon: Icon(Icons.payment, color: AppColors.textPrimaryDark),
       label: Text(
         'Checkout (₹${cartProvider.totalAmount.toStringAsFixed(0)})',
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.textPrimaryDark,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -453,7 +478,7 @@ class _MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
       final itemIndex = cartProvider.items.indexWhere(
         (cartItem) => cartItem.menuItem.id == item.id,
       );
-      
+
       if (itemIndex != -1) {
         final currentQuantity = cartProvider.items[itemIndex].quantity;
         if (currentQuantity > 1) {

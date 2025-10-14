@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ImageService {
-  static const String _imageKitBaseUrl = 'https://ik.imagekit.io/YOUR_IMAGEKIT_ID';
-  
+  static const String _imageKitBaseUrl =
+      'https://ik.imagekit.io/YOUR_IMAGEKIT_ID';
+
   // Generate ImageKit URL with transformations
   static String getOptimizedImageUrl({
     required String imagePath,
@@ -61,10 +62,7 @@ class ImageService {
 
   // Get high-quality image URL
   static String getHighQualityImageUrl(String imagePath) {
-    return getOptimizedImageUrl(
-      imagePath: imagePath,
-      quality: 90,
-    );
+    return getOptimizedImageUrl(imagePath: imagePath, quality: 90);
   }
 
   // Get low-quality placeholder URL for progressive loading

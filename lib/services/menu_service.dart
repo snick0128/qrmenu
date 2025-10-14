@@ -3,18 +3,20 @@ import '../models/menu_item_model.dart';
 import 'firebase_service.dart';
 
 class MenuService {
-  static final CollectionReference _menuCollection =
-      FirebaseService.firestore.collection('menu_items');
+  static final CollectionReference _menuCollection = FirebaseService.firestore
+      .collection('menu_items');
 
   // Fetch all menu items
   static Future<List<MenuItemModel>> getAllMenuItems() async {
     try {
       final QuerySnapshot snapshot = await _menuCollection.get();
       return snapshot.docs
-          .map((doc) => MenuItemModel.fromJson({
-                'id': doc.id,
-                ...doc.data() as Map<String, dynamic>,
-              }))
+          .map(
+            (doc) => MenuItemModel.fromJson({
+              'id': doc.id,
+              ...doc.data() as Map<String, dynamic>,
+            }),
+          )
           .toList();
     } catch (e) {
       print('Error fetching menu items: $e');
@@ -23,16 +25,20 @@ class MenuService {
   }
 
   // Fetch menu items by category
-  static Future<List<MenuItemModel>> getMenuItemsByCategory(String category) async {
+  static Future<List<MenuItemModel>> getMenuItemsByCategory(
+    String category,
+  ) async {
     try {
       final QuerySnapshot snapshot = await _menuCollection
           .where('category', isEqualTo: category)
           .get();
       return snapshot.docs
-          .map((doc) => MenuItemModel.fromJson({
-                'id': doc.id,
-                ...doc.data() as Map<String, dynamic>,
-              }))
+          .map(
+            (doc) => MenuItemModel.fromJson({
+              'id': doc.id,
+              ...doc.data() as Map<String, dynamic>,
+            }),
+          )
           .toList();
     } catch (e) {
       print('Error fetching menu items by category: $e');
@@ -48,10 +54,12 @@ class MenuService {
           .limit(10)
           .get();
       return snapshot.docs
-          .map((doc) => MenuItemModel.fromJson({
-                'id': doc.id,
-                ...doc.data() as Map<String, dynamic>,
-              }))
+          .map(
+            (doc) => MenuItemModel.fromJson({
+              'id': doc.id,
+              ...doc.data() as Map<String, dynamic>,
+            }),
+          )
           .toList();
     } catch (e) {
       print('Error fetching popular items: $e');
@@ -67,10 +75,12 @@ class MenuService {
           .where('name', isLessThanOrEqualTo: query + '\uf8ff')
           .get();
       return snapshot.docs
-          .map((doc) => MenuItemModel.fromJson({
-                'id': doc.id,
-                ...doc.data() as Map<String, dynamic>,
-              }))
+          .map(
+            (doc) => MenuItemModel.fromJson({
+              'id': doc.id,
+              ...doc.data() as Map<String, dynamic>,
+            }),
+          )
           .toList();
     } catch (e) {
       print('Error searching menu items: $e');

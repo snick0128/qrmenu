@@ -15,16 +15,19 @@ class OrderHistoryProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final ordersJson = prefs.getStringList(_ordersKey) ?? [];
-      
-      _orders = ordersJson.map((json) {
-        try {
-          return OrderModel.fromJson(jsonDecode(json));
-        } catch (e) {
-          debugPrint('Error parsing order: $e');
-          return null;
-        }
-      }).whereType<OrderModel>().toList();
-      
+
+      _orders = ordersJson
+          .map((json) {
+            try {
+              return OrderModel.fromJson(jsonDecode(json));
+            } catch (e) {
+              debugPrint('Error parsing order: $e');
+              return null;
+            }
+          })
+          .whereType<OrderModel>()
+          .toList();
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading orders: $e');
@@ -46,7 +49,9 @@ class OrderHistoryProvider extends ChangeNotifier {
   Future<void> _saveToStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final ordersJson = _orders.map((order) => jsonEncode(order.toJson())).toList();
+      final ordersJson = _orders
+          .map((order) => jsonEncode(order.toJson()))
+          .toList();
       await prefs.setStringList(_ordersKey, ordersJson);
     } catch (e) {
       debugPrint('Error saving to storage: $e');
@@ -109,7 +114,9 @@ class OrderHistoryProvider extends ChangeNotifier {
         orderType: 'Dine In',
       ),
       OrderModel(
-        id: (DateTime.now().millisecondsSinceEpoch + 1000).toString().substring(7),
+        id: (DateTime.now().millisecondsSinceEpoch + 1000).toString().substring(
+          7,
+        ),
         restaurantName: '🍔 Burger King',
         items: [
           CartItemModel(

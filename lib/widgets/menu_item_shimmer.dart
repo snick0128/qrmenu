@@ -12,23 +12,11 @@ class MenuItemShimmer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: double.infinity,
-            height: 120,
-            color: Colors.white,
-          ),
+          Container(width: double.infinity, height: 120, color: Colors.white),
           const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            height: 16,
-            color: Colors.white,
-          ),
+          Container(width: double.infinity, height: 16, color: Colors.white),
           const SizedBox(height: 4),
-          Container(
-            width: 100,
-            height: 16,
-            color: Colors.white,
-          ),
+          Container(width: 100, height: 16, color: Colors.white),
         ],
       ),
     );

@@ -104,7 +104,9 @@ class MenuSectionWidget extends StatelessWidget {
                   sessionType: 'dine_in', // Default for now
                   onAddToCart: () => onAddToCart(item),
                   onIncrement: () => onAddToCart(item),
-                  onDecrement: onDecrement != null ? () => onDecrement!(item) : null,
+                  onDecrement: onDecrement != null
+                      ? () => onDecrement!(item)
+                      : null,
                 ),
               );
             },
@@ -120,10 +122,8 @@ class MenuSectionWidget extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CategoryViewAllScreen(
-          categoryName: title,
-          items: items,
-        ),
+        builder: (context) =>
+            CategoryViewAllScreen(categoryName: title, items: items),
       ),
     );
   }

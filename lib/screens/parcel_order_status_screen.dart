@@ -18,7 +18,8 @@ class ParcelOrderStatusScreen extends StatefulWidget {
   });
 
   @override
-  State<ParcelOrderStatusScreen> createState() => _ParcelOrderStatusScreenState();
+  State<ParcelOrderStatusScreen> createState() =>
+      _ParcelOrderStatusScreenState();
 }
 
 class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
@@ -27,7 +28,7 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
   late AnimationController _pulseController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _pulseAnimation;
-  
+
   StreamSubscription<DocumentSnapshot>? _orderListener;
   Map<String, dynamic>? _orderData;
   String? _orderStatus;
@@ -45,15 +46,15 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _pulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _animationController.forward();
     _setupOrderListener();
   }
@@ -63,27 +64,28 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
         .doc(widget.orderId)
         .snapshots()
         .listen((snapshot) {
-      if (mounted && snapshot.exists) {
-        setState(() {
-          _orderData = snapshot.data() as Map<String, dynamic>;
-          _orderStatus = _orderData!['status'] as String?;
-          _orderItems = _orderData!['items'] as List<dynamic>? ?? [];
-          _totalAmount = (_orderData!['totalAmount'] as num?)?.toDouble() ?? 0.0;
-        });
+          if (mounted && snapshot.exists) {
+            setState(() {
+              _orderData = snapshot.data() as Map<String, dynamic>;
+              _orderStatus = _orderData!['status'] as String?;
+              _orderItems = _orderData!['items'] as List<dynamic>? ?? [];
+              _totalAmount =
+                  (_orderData!['totalAmount'] as num?)?.toDouble() ?? 0.0;
+            });
 
-        // Handle order completion
-        if (_orderStatus == 'completed') {
-          _showOrderCompletedDialog();
-        }
-        
-        // Start pulse animation for active states
-        if (_orderStatus == 'preparing' || _orderStatus == 'ready') {
-          _pulseController.repeat(reverse: true);
-        } else {
-          _pulseController.stop();
-        }
-      }
-    });
+            // Handle order completion
+            if (_orderStatus == 'completed') {
+              _showOrderCompletedDialog();
+            }
+
+            // Start pulse animation for active states
+            if (_orderStatus == 'preparing' || _orderStatus == 'ready') {
+              _pulseController.repeat(reverse: true);
+            } else {
+              _pulseController.stop();
+            }
+          }
+        });
   }
 
   @override
@@ -100,16 +102,10 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surfaceDark,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(
-              Icons.check_circle,
-              color: AppColors.success,
-              size: 32,
-            ),
+            Icon(Icons.check_circle, color: AppColors.success, size: 32),
             const SizedBox(width: 12),
             Text(
               'Order Picked Up!',
@@ -137,16 +133,11 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
               decoration: BoxDecoration(
                 color: AppColors.success.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.success.withOpacity(0.3),
-                ),
+                border: Border.all(color: AppColors.success.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.star,
-                    color: AppColors.success,
-                  ),
+                  Icon(Icons.star, color: AppColors.success),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -165,11 +156,7 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
         actions: [
           ElevatedButton(
             onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/',
-                (route) => false,
-              );
+              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -232,7 +219,7 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
   Widget _buildProgressIndicator() {
     final statuses = ['pending', 'preparing', 'ready', 'completed'];
     final currentIndex = statuses.indexOf(_orderStatus ?? 'pending');
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(16),
@@ -260,7 +247,7 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
               final status = entry.value;
               final isActive = index <= currentIndex;
               final isCurrent = index == currentIndex;
-              
+
               return Expanded(
                 child: Row(
                   children: [
@@ -269,14 +256,18 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: isActive ? _getStatusColor(status) : AppColors.surfaceVariantDark,
+                        color: isActive
+                            ? _getStatusColor(status)
+                            : AppColors.surfaceVariantDark,
                         shape: BoxShape.circle,
-                        border: isCurrent ? Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        ) : null,
+                        border: isCurrent
+                            ? Border.all(color: Colors.white, width: 2)
+                            : null,
                       ),
-                      child: isCurrent && (_orderStatus == 'preparing' || _orderStatus == 'ready')
+                      child:
+                          isCurrent &&
+                              (_orderStatus == 'preparing' ||
+                                  _orderStatus == 'ready')
                           ? AnimatedBuilder(
                               animation: _pulseAnimation,
                               builder: (context, child) {
@@ -292,11 +283,13 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
                             )
                           : Icon(
                               _getStatusIcon(status),
-                              color: isActive ? Colors.white : AppColors.textTertiaryDark,
+                              color: isActive
+                                  ? Colors.white
+                                  : AppColors.textTertiaryDark,
                               size: 20,
                             ),
                     ),
-                    
+
                     // Connection line (except for last item)
                     if (index < statuses.length - 1)
                       Expanded(
@@ -434,7 +427,9 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(_orderStatus).withOpacity(0.8),
+                              color: _getStatusColor(
+                                _orderStatus,
+                              ).withOpacity(0.8),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: Colors.white.withOpacity(0.3),
@@ -458,9 +453,7 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
             ),
 
             // Progress Indicator
-            SliverToBoxAdapter(
-              child: _buildProgressIndicator(),
-            ),
+            SliverToBoxAdapter(child: _buildProgressIndicator()),
 
             // Order Items
             if (_orderItems.isNotEmpty)
@@ -611,9 +604,7 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
               ),
 
             // Bottom spacing
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 50),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 50)),
           ],
         ),
       ),
@@ -653,7 +644,8 @@ class _ParcelOrderStatusScreenState extends State<ParcelOrderStatusScreen>
                     fontSize: 14,
                   ),
                 ),
-                if (item['specialInstructions'] != null && (item['specialInstructions'] as String).isNotEmpty) ...[
+                if (item['specialInstructions'] != null &&
+                    (item['specialInstructions'] as String).isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     'Note: ${item['specialInstructions']}',

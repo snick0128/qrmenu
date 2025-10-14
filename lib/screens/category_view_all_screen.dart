@@ -59,12 +59,15 @@ class _CategoryViewAllScreenState extends State<CategoryViewAllScreen> {
           _currentPage++;
           final startIndex = _currentPage * _itemsPerPage;
           final endIndex = (_currentPage + 1) * _itemsPerPage;
-          
+
           if (startIndex < widget.items.length) {
-            final newItems = widget.items.skip(startIndex).take(_itemsPerPage).toList();
+            final newItems = widget.items
+                .skip(startIndex)
+                .take(_itemsPerPage)
+                .toList();
             _displayedItems.addAll(newItems);
           }
-          
+
           _isLoadingMore = false;
         });
       }
@@ -72,7 +75,8 @@ class _CategoryViewAllScreenState extends State<CategoryViewAllScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       if (_displayedItems.length < widget.items.length) {
         _loadMoreItems();
       }
@@ -121,9 +125,12 @@ class _CategoryViewAllScreenState extends State<CategoryViewAllScreen> {
                 child: ResponsiveMenuGrid(
                   items: _displayedItems,
                   sessionType: cartProvider.sessionType ?? 'dine_in',
-                  onAddToCart: (item) => _addToCart(context, item, cartProvider),
-                  onIncrement: (item) => _addToCart(context, item, cartProvider),
-                  onDecrement: (item) => _decreaseItemQuantity(context, item, cartProvider),
+                  onAddToCart: (item) =>
+                      _addToCart(context, item, cartProvider),
+                  onIncrement: (item) =>
+                      _addToCart(context, item, cartProvider),
+                  onDecrement: (item) =>
+                      _decreaseItemQuantity(context, item, cartProvider),
                   getItemQuantity: (id) => cartProvider.getItemQuantity(id),
                 ),
               ),
@@ -174,7 +181,7 @@ class _CategoryViewAllScreenState extends State<CategoryViewAllScreen> {
       final itemIndex = cartProvider.items.indexWhere(
         (cartItem) => cartItem.menuItem.id == item.id,
       );
-      
+
       if (itemIndex != -1) {
         final currentQuantity = cartProvider.items[itemIndex].quantity;
         if (currentQuantity > 1) {

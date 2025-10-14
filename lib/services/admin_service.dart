@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/table_model.dart';
 import '../models/sales_analytics.dart';
 import '../models/order_model.dart';
@@ -8,11 +9,49 @@ import '../services/firebase_service.dart';
 
 class AdminService {
   static final FirebaseFirestore _firestore = FirebaseService.firestore;
-  
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Check if user is an admin
+  static Future<bool> isAdmin(String uid) async {
+    try {
+      final adminDoc = await _firestore.collection('admins').doc(uid).get();
+      return adminDoc.exists &&
+          (adminDoc.data() as Map<String, dynamic>)['role'] == 'admin';
+    } catch (e) {
+      print('Error checking admin status: $e');
+      return false;
+    }
+  }
+
+  // Sign in with email and password
+  static Future<UserCredential> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Verify user is an admin
+      if (!await isAdmin(userCredential.user!.uid)) {
+        await _auth.signOut();
+        throw Exception('User is not an admin');
+      }
+
+      return userCredential;
+    } catch (e) {
+      print('Error signing in: $e');
+      rethrow;
+    }
+  }
+
   // Collection references
   static CollectionReference get tables => _firestore.collection('tables');
-  static CollectionReference get analytics => _firestore.collection('analytics');
-  
+  static CollectionReference get analytics =>
+      _firestore.collection('analytics');
+
   // Initialize default tables (call once during setup)
   static Future<void> initializeTables() async {
     try {
@@ -20,12 +59,16 @@ class AdminService {
       if (tablesSnapshot.docs.isEmpty) {
         // Create default tables
         for (int i = 1; i <= 20; i++) {
-          await tables.doc('table_$i').set(TableModel(
-            id: 'table_$i',
-            name: 'Table $i',
-            number: i,
-            capacity: i <= 10 ? 4 : (i <= 15 ? 6 : 8),
-          ).toJson());
+          await tables
+              .doc('table_$i')
+              .set(
+                TableModel(
+                  id: 'table_$i',
+                  name: 'Table $i',
+                  number: i,
+                  capacity: i <= 10 ? 4 : (i <= 15 ? 6 : 8),
+                ).toJson(),
+              );
         }
       }
     } catch (e) {
@@ -44,7 +87,10 @@ class AdminService {
   }
 
   // Update table status
-  static Future<void> updateTableStatus(String tableId, TableStatus status) async {
+  static Future<void> updateTableStatus(
+    String tableId,
+    TableStatus status,
+  ) async {
     try {
       await tables.doc(tableId).update({
         'status': status.toString(),
@@ -57,7 +103,11 @@ class AdminService {
   }
 
   // Reserve table for session
-  static Future<void> reserveTableForSession(String tableId, String sessionId, String reservedBy) async {
+  static Future<void> reserveTableForSession(
+    String tableId,
+    String sessionId,
+    String reservedBy,
+  ) async {
     try {
       await tables.doc(tableId).update({
         'status': TableStatus.occupied.toString(),
@@ -102,7 +152,9 @@ class AdminService {
   }
 
   // Get sales analytics for different date ranges
-  static Future<SalesAnalytics> getSalesAnalytics(DateFilterType dateFilter) async {
+  static Future<SalesAnalytics> getSalesAnalytics(
+    DateFilterType dateFilter,
+  ) async {
     try {
       DateTime startDate;
       DateTime endDate = DateTime.now();
@@ -121,19 +173,26 @@ class AdminService {
 
       // Get orders within date range
       final ordersQuery = FirebaseService.orders
-          .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where(
+            'createdAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+          )
           .where('createdAt', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
 
       final ordersSnapshot = await ordersQuery.get();
-      
+
       // Get dine-in sessions within date range
       final sessionsQuery = FirebaseService.dineInSessions
-          .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where(
+            'startTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+          )
           .where('startTime', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
 
       final sessionsSnapshot = await sessionsQuery.get();
 
-      int totalOrders = ordersSnapshot.docs.length + sessionsSnapshot.docs.length;
+      int totalOrders =
+          ordersSnapshot.docs.length + sessionsSnapshot.docs.length;
       double totalSales = 0.0;
       int ongoingOrders = 0;
       int completedOrders = 0;
@@ -173,7 +232,9 @@ class AdminService {
         }
       }
 
-      double averageOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0.0;
+      double averageOrderValue = totalOrders > 0
+          ? totalSales / totalOrders
+          : 0.0;
 
       return SalesAnalytics(
         totalOrders: totalOrders,
@@ -191,16 +252,23 @@ class AdminService {
   }
 
   // Get real-time sales analytics stream
-  static Stream<SalesAnalytics> getSalesAnalyticsStream(DateFilterType dateFilter) {
+  static Stream<SalesAnalytics> getSalesAnalyticsStream(
+    DateFilterType dateFilter,
+  ) {
     return Stream.periodic(const Duration(seconds: 30)).asyncMap((_) async {
       return await getSalesAnalytics(dateFilter);
     });
   }
 
   // Get all orders with filters
-  static Stream<List<Map<String, dynamic>>> getOrdersStream({String? statusFilter}) {
-    Query ordersQuery = FirebaseService.orders.orderBy('createdAt', descending: true);
-    
+  static Stream<List<Map<String, dynamic>>> getOrdersStream({
+    String? statusFilter,
+  }) {
+    Query ordersQuery = FirebaseService.orders.orderBy(
+      'createdAt',
+      descending: true,
+    );
+
     if (statusFilter != null && statusFilter != 'all') {
       ordersQuery = ordersQuery.where('status', isEqualTo: statusFilter);
     }
@@ -208,19 +276,20 @@ class AdminService {
     return ordersQuery.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        return {
-          ...data,
-          'id': doc.id,
-          'type': 'parcel',
-        };
+        return {...data, 'id': doc.id, 'type': 'parcel'};
       }).toList();
     });
   }
 
   // Get all dine-in sessions
-  static Stream<List<Map<String, dynamic>>> getDineInSessionsStream({String? statusFilter}) {
-    Query sessionsQuery = FirebaseService.dineInSessions.orderBy('startTime', descending: true);
-    
+  static Stream<List<Map<String, dynamic>>> getDineInSessionsStream({
+    String? statusFilter,
+  }) {
+    Query sessionsQuery = FirebaseService.dineInSessions.orderBy(
+      'startTime',
+      descending: true,
+    );
+
     if (statusFilter != null && statusFilter != 'all') {
       sessionsQuery = sessionsQuery.where('status', isEqualTo: statusFilter);
     }
@@ -228,21 +297,23 @@ class AdminService {
     return sessionsQuery.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        return {
-          ...data,
-          'id': doc.id,
-          'type': 'dine_in',
-        };
+        return {...data, 'id': doc.id, 'type': 'dine_in'};
       }).toList();
     });
   }
 
   // Update item status in order/session
-  static Future<void> updateItemStatus(String orderId, String orderType, int itemIndex, String status) async {
+  static Future<void> updateItemStatus(
+    String orderId,
+    String orderType,
+    int itemIndex,
+    String status,
+  ) async {
     try {
-      final collection = orderType == 'dine_in' ? 
-          FirebaseService.dineInSessions : FirebaseService.orders;
-      
+      final collection = orderType == 'dine_in'
+          ? FirebaseService.dineInSessions
+          : FirebaseService.orders;
+
       final doc = await collection.doc(orderId).get();
       final data = doc.data() as Map<String, dynamic>;
       final items = List<Map<String, dynamic>>.from(data['items'] ?? []);
@@ -261,11 +332,15 @@ class AdminService {
   }
 
   // Generate bill for session
-  static Future<Map<String, dynamic>> generateBill(String sessionId, String sessionType) async {
+  static Future<Map<String, dynamic>> generateBill(
+    String sessionId,
+    String sessionType,
+  ) async {
     try {
-      final collection = sessionType == 'dine_in' ? 
-          FirebaseService.dineInSessions : FirebaseService.orders;
-      
+      final collection = sessionType == 'dine_in'
+          ? FirebaseService.dineInSessions
+          : FirebaseService.orders;
+
       final doc = await collection.doc(sessionId).get();
       final data = doc.data() as Map<String, dynamic>;
 
@@ -298,11 +373,16 @@ class AdminService {
   }
 
   // Complete payment and close session
-  static Future<void> completePayment(String sessionId, String sessionType, String paymentMethod) async {
+  static Future<void> completePayment(
+    String sessionId,
+    String sessionType,
+    String paymentMethod,
+  ) async {
     try {
-      final collection = sessionType == 'dine_in' ? 
-          FirebaseService.dineInSessions : FirebaseService.orders;
-      
+      final collection = sessionType == 'dine_in'
+          ? FirebaseService.dineInSessions
+          : FirebaseService.orders;
+
       await collection.doc(sessionId).update({
         'status': 'completed',
         'paymentStatus': 'paid',
@@ -315,7 +395,7 @@ class AdminService {
         final sessionDoc = await collection.doc(sessionId).get();
         final sessionData = sessionDoc.data() as Map<String, dynamic>;
         final tableNumber = sessionData['tableNumber'] as String?;
-        
+
         if (tableNumber != null) {
           await releaseTable('table_$tableNumber');
         }
@@ -327,7 +407,11 @@ class AdminService {
   }
 
   // Add item manually to session (by admin)
-  static Future<void> addItemToSession(String sessionId, String sessionType, Map<String, dynamic> item) async {
+  static Future<void> addItemToSession(
+    String sessionId,
+    String sessionType,
+    Map<String, dynamic> item,
+  ) async {
     try {
       final itemWithAdminFlag = {
         ...item,
@@ -336,15 +420,22 @@ class AdminService {
         'addedAt': FieldValue.serverTimestamp(),
       };
 
-      await FirebaseService.addItemToSession(sessionId, itemWithAdminFlag, sessionType);
-      
+      await FirebaseService.addItemToSession(
+        sessionId,
+        itemWithAdminFlag,
+        sessionType,
+      );
+
       // Update table total if dine-in
       if (sessionType == 'dine_in') {
-        final sessionDoc = await FirebaseService.dineInSessions.doc(sessionId).get();
+        final sessionDoc = await FirebaseService.dineInSessions
+            .doc(sessionId)
+            .get();
         final sessionData = sessionDoc.data() as Map<String, dynamic>;
         final tableNumber = sessionData['tableNumber'] as String?;
-        final totalAmount = (sessionData['totalAmount'] as num?)?.toDouble() ?? 0.0;
-        
+        final totalAmount =
+            (sessionData['totalAmount'] as num?)?.toDouble() ?? 0.0;
+
         if (tableNumber != null) {
           await updateTableTotal('table_$tableNumber', totalAmount);
         }

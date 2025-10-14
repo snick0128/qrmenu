@@ -16,7 +16,7 @@ class AppColors {
   static const Color backgroundDark = Color(0xFF0D0D0D);
   static const Color surfaceDark = Color(0xFF1A1A1A);
   static const Color surfaceVariantDark = Color(0xFF2A2A2A);
-  
+
   // Neutral Colors - Light Theme
   static const Color backgroundLight = Color(0xFFFAF8F5); // Warm white
   static const Color surfaceLight = Color(0xFFFFFFFF);
@@ -26,7 +26,7 @@ class AppColors {
   static const Color textPrimaryDark = Colors.white;
   static const Color textSecondaryDark = Color(0xCCFFFFFF);
   static const Color textTertiaryDark = Color(0x99FFFFFF);
-  
+
   // Text Colors - Light Theme
   static const Color textPrimaryLight = Color(0xFF2D2D2D);
   static const Color textSecondaryLight = Color(0xFF666666);
@@ -46,17 +46,17 @@ class AppColors {
   // Card Colors
   static const Color cardShadowLight = Color(0x1A000000);
   static const Color cardShadowDark = Color(0x40000000);
-  
+
   // Glassmorphism colors
   static const Color glassDark = Color(0x40FFFFFF);
   static const Color glassLight = Color(0x80FFFFFF);
-  
+
   // Item status colors
   static const Color statusPending = Color(0xFFFFB800);
   static const Color statusPreparing = Color(0xFF2196F3);
   static const Color statusServed = Color(0xFF4CAF50);
   static const Color statusCancelled = Color(0xFFF44336);
-  
+
   // Backward compatibility aliases
   static Color get background => backgroundDark;
   static Color get surface => surfaceDark;
@@ -154,7 +154,9 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 6,
           shadowColor: AppColors.primary.withOpacity(0.4),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,

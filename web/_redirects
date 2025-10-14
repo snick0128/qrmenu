@@ -1,1 +1,13 @@
+# Netlify redirects for SPA
+# Handle direct routes to index.html
 /*    /index.html    200
+
+# Optional: Redirect www to non-www
+http://www.appurl.netlify.app/*    https://appurl.netlify.app/:splat    301!
+
+# Handle clean URLs
+/*/     /index.html     200
+/*/*    /index.html     200
+
+# Redirect 404s to the manual entry screen
+/404    /index.html     200

@@ -4,10 +4,7 @@ import '../utils/app_theme.dart';
 class ItemStatusBadge extends StatelessWidget {
   final String status;
 
-  const ItemStatusBadge({
-    super.key,
-    required this.status,
-  });
+  const ItemStatusBadge({super.key, required this.status});
 
   Color _getStatusColor() {
     switch (status.toLowerCase()) {
@@ -57,28 +54,18 @@ class ItemStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getStatusColor();
-    
+
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.5),
-          width: 1,
-        ),
+        border: Border.all(color: color.withOpacity(0.5), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            _getStatusIcon(),
-            color: color,
-            size: 12,
-          ),
+          Icon(_getStatusIcon(), color: color, size: 12),
           const SizedBox(width: 4),
           Text(
             _getStatusText(),
