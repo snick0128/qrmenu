@@ -1,6 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/code_validation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../models/code_validation_result.dart';
+import '../../shared/models/cart_item_model.dart';
+import 'firestore_status.dart';
 
 class FirebaseService {
   static final FirebaseService _instance = FirebaseService._internal();
@@ -399,7 +402,7 @@ class FirebaseService {
   static Future<void> updateItemStatus(
     String sessionId,
     int itemIndex,
-    String status,
+    OrderStatus status,
     String sessionType,
   ) async {
     final collection = sessionType == 'dine_in' ? dineInSessions : orders;
@@ -408,7 +411,7 @@ class FirebaseService {
     final items = List<Map<String, dynamic>>.from(sessionData['items'] ?? []);
 
     if (itemIndex < items.length) {
-      items[itemIndex]['status'] = status;
+      items[itemIndex]['status'] = status.toFirestore();
       items[itemIndex]['statusUpdatedAt'] = FieldValue.serverTimestamp();
 
       await collection.doc(sessionId).update({'items': items});

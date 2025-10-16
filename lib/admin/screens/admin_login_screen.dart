@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/admin_service.dart';
-import '../widgets/responsive_layout.dart';
+import '../../core/services/admin_service.dart';
+import '../../shared/widgets/responsive_layout.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});

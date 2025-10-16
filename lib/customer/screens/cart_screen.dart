@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/cart_provider.dart';
-import '../providers/menu_provider.dart';
-import '../utils/app_theme.dart';
+import '../../shared/providers/cart_provider.dart';
+import '../../shared/providers/menu_provider.dart';
+import '../../shared/models/cart_item_model.dart';
+import '../../shared/utils/app_theme.dart';
 import 'checkout_screen.dart';
 
 class CartScreen extends StatelessWidget {
@@ -47,7 +48,7 @@ class CartScreen extends StatelessWidget {
                       'Pending Orders',
                       cartProvider.pendingItems,
                       cartProvider,
-                      ItemStatus.pending,
+                      OrderStatus.pending,
                     ),
 
                   // Preparing Items
@@ -57,7 +58,7 @@ class CartScreen extends StatelessWidget {
                       'Preparing',
                       cartProvider.preparingItems,
                       cartProvider,
-                      ItemStatus.preparing,
+                      OrderStatus.preparing,
                     ),
 
                   // Served Items
@@ -67,7 +68,7 @@ class CartScreen extends StatelessWidget {
                       'Served',
                       cartProvider.servedItems,
                       cartProvider,
-                      ItemStatus.served,
+                      OrderStatus.served,
                     ),
                 ],
               ),
@@ -159,9 +160,9 @@ class CartScreen extends StatelessWidget {
   Widget _buildStatusSection(
     BuildContext context,
     String title,
-    List<CartItem> items,
+    List<CartItemModel> items,
     CartProvider cartProvider,
-    ItemStatus status,
+    OrderStatus status,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,9 +213,9 @@ class CartScreen extends StatelessWidget {
   Widget _buildCartItem(
     BuildContext context,
     int index,
-    CartItem item,
+    CartItemModel item,
     CartProvider cartProvider,
-    ItemStatus status,
+    OrderStatus status,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -345,7 +346,7 @@ class CartScreen extends StatelessWidget {
               const Spacer(),
 
               // Action Buttons
-              if (status == ItemStatus.served)
+              if (status == OrderStatus.served)
                 ElevatedButton.icon(
                   onPressed: () => cartProvider.reorderItem(index),
                   icon: const Icon(Icons.refresh, size: 16),
@@ -359,7 +360,7 @@ class CartScreen extends StatelessWidget {
                     ),
                   ),
                 )
-              else if (status == ItemStatus.pending)
+              else if (status == OrderStatus.pending)
                 IconButton(
                   onPressed: () => cartProvider.removeItem(index),
                   icon: const Icon(Icons.delete_outline),
@@ -375,7 +376,7 @@ class CartScreen extends StatelessWidget {
   Widget _buildQuantityButton(
     BuildContext context,
     int index,
-    CartItem item,
+    CartItemModel item,
     CartProvider cartProvider,
     IconData icon,
     VoidCallback onPressed,
@@ -493,36 +494,42 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  bool _canModifyQuantity(ItemStatus status, CartItem item) {
+  bool _canModifyQuantity(OrderStatus status, CartItemModel item) {
     switch (status) {
-      case ItemStatus.pending:
+      case OrderStatus.pending:
         return true;
-      case ItemStatus.preparing:
+      case OrderStatus.preparing:
         return true; // Can only increase
-      case ItemStatus.served:
+      case OrderStatus.served:
+        return false;
+      default:
         return false;
     }
   }
 
-  Icon _getStatusIcon(ItemStatus status) {
+  Icon _getStatusIcon(OrderStatus status) {
     switch (status) {
-      case ItemStatus.pending:
-        return Icon(Icons.access_time, color: AppColors.warning, size: 20);
-      case ItemStatus.preparing:
-        return Icon(Icons.restaurant, color: AppColors.info, size: 20);
-      case ItemStatus.served:
-        return Icon(Icons.check_circle, color: AppColors.success, size: 20);
+      case OrderStatus.pending:
+        return Icon(Icons.access_time, color: AppColors.primary.withOpacity(0.7), size: 20);
+      case OrderStatus.preparing:
+        return Icon(Icons.restaurant, color: AppColors.primary, size: 20);
+      case OrderStatus.served:
+        return Icon(Icons.check_circle, color: Colors.green, size: 20);
+      default:
+        return Icon(Icons.help_outline, color: Colors.grey, size: 20);
     }
   }
 
-  Color _getStatusColor(ItemStatus status) {
+  Color _getStatusColor(OrderStatus status) {
     switch (status) {
-      case ItemStatus.pending:
-        return AppColors.warning;
-      case ItemStatus.preparing:
-        return AppColors.info;
-      case ItemStatus.served:
-        return AppColors.success;
+      case OrderStatus.pending:
+        return AppColors.primary.withOpacity(0.7);
+      case OrderStatus.preparing:
+        return AppColors.primary;
+      case OrderStatus.served:
+        return Colors.green;
+      default:
+        return Colors.grey;
     }
   }
 

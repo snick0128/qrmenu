@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'lib/services/firebase_service.dart';
-import 'lib/services/admin_service.dart';
-import 'lib/models/sales_analytics.dart';
+import 'package:qrmenu/core/firebase/firebase_service.dart';
+import 'package:qrmenu/core/models/date_filter_type.dart';
+import 'package:qrmenu/core/services/admin_service.dart';
 import 'lib/firebase_options.dart';
 
 /// Simple test script to verify admin functionality

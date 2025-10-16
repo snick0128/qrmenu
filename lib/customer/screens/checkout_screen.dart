@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/cart_provider.dart';
-import '../services/firebase_service.dart';
-import '../utils/app_theme.dart';
-import '../screens/parcel_order_status_screen.dart';
-import 'review_screen.dart';
+import 'package:qrmenu/core/firebase/firebase_service.dart';
+import 'package:qrmenu/shared/providers/cart_provider.dart';
+import 'package:qrmenu/shared/utils/app_theme.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final String? sessionId;

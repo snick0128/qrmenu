@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:qrmenu/shared/models/cart_item_model.dart';
 import '../providers/app_language_provider.dart';
 import '../models/cart_item_model.dart';
 import '../utils/app_theme.dart';

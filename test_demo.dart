@@ -1,4 +1,4 @@
-import 'lib/services/mock_data.dart';
+import 'package:qrmenu/core/services/mock_data.dart';
 
 void main() {
   print('=== QR Menu App - Production Ready Demo ===\n');
@@ -20,7 +20,7 @@ void main() {
   print('⚡ Quick Order Items (Roti & Popular):');
   final quickItems = getQuickOrderItems();
   for (final item in quickItems) {
-    final vegIcon = item.isVeg ? '🟢' : '🔴';
+    const vegIcon = '🟢';
     final popularIcon = item.isPopular ? '⭐' : '';
     print('$vegIcon ${item.name} - ₹${item.price.toStringAsFixed(0)} $popularIcon');
   }

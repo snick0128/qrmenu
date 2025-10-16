@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'lib/services/firebase_service.dart';
+import 'package:qrmenu/core/firebase/firebase_service.dart';
 import 'lib/firebase_options.dart';
 
 /// Script to add sample menu data to Firebase

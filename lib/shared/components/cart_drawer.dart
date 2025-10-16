@@ -4,6 +4,7 @@ import '../providers/cart_provider.dart';
 import '../models/cart_item_model.dart';
 import '../utils/app_theme.dart';
 import '../widgets/item_status_badge.dart';
+import 'package:provider/provider.dart';
 
 class CartDrawer extends StatefulWidget {
   final String sessionId;
@@ -26,7 +27,20 @@ class CartDrawer extends StatefulWidget {
 class _CartDrawerState extends State<CartDrawer>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<double> _slideAnimation;
+  Color _getStatusColor(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.pending:
+        return AppColors.primary.withOpacity(0.7);
+      case OrderStatus.preparing:
+        return AppColors.primary;
+      case OrderStatus.ready:
+      case OrderStatus.served:
+      case OrderStatus.delivered:
+        return Colors.green;
+      case OrderStatus.cancelled:
+        return Colors.red;
+    }
+  }
   late Animation<double> _fadeAnimation;
 
   @override
@@ -242,7 +256,7 @@ class _CartDrawerState extends State<CartDrawer>
                               itemBuilder: (context, index) {
                                 final item = cartProvider.items[index];
                                 return _CartItemCard(
-                                  item: item.toCartItemModel(),
+                                  item: item,
                                   sessionType: widget.sessionType,
                                   onIncrease:
                                       _canModifyItem(
@@ -468,6 +482,21 @@ class _CartDrawerState extends State<CartDrawer>
 
 class _CartItemCard extends StatelessWidget {
   final CartItemModel item;
+
+  Color _getStatusColor(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.pending:
+        return AppColors.primary.withOpacity(0.7);
+      case OrderStatus.preparing:
+        return AppColors.primary;
+      case OrderStatus.ready:
+      case OrderStatus.served:
+      case OrderStatus.delivered:
+        return Colors.green;
+      case OrderStatus.cancelled:
+        return Colors.red;
+    }
+  }
   final String sessionType;
   final VoidCallback? onIncrease;
   final VoidCallback? onDecrease;
@@ -525,7 +554,10 @@ class _CartItemCard extends StatelessWidget {
               ),
 
               // Status badge
-              if (item.status != null) ItemStatusBadge(status: item.status!),
+              if (item.status != null) ItemStatusBadge(
+                status: item.status!.name,
+                color: _getStatusColor(item.status!),
+              );
 
               // Counter badge if no status
               if (item.addedByCounter == true)

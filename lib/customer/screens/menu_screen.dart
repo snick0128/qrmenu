@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:badges/badges.dart' as badges;
-import '../providers/menu_provider.dart';
-import '../providers/cart_provider.dart';
-import '../models/menu_item_model.dart';
-import '../services/firebase_service.dart';
-import '../widgets/quick_order_bar.dart';
-import '../widgets/category_tabs.dart';
-import '../widgets/search_bar_widget.dart';
-import '../widgets/web_menu_grid.dart';
-import '../widgets/menu_section_widget.dart';
-import '../utils/app_theme.dart';
+import 'package:qrmenu/core/firebase/firebase_service.dart';
+import 'package:qrmenu/shared/providers/cart_provider.dart';
+import 'package:qrmenu/shared/providers/menu_provider.dart';
 import 'cart_screen.dart';
 import 'checkout_screen.dart';
-import 'search_results_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({

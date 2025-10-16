@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import '../lib/screens/admin_login_screen.dart';
+import 'package:qrmenu/admin/screens/admin_login_screen.dart';
 
 void main() {
   group('Admin Login Screen Tests', () {
